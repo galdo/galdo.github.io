@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktiver Trainingsplan</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎾</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cookie&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="text-gray-800">
+
+    <div id="app" class="container mx-auto p-4 md:p-8" style="max-width: 82.4rem;">
+
+        <main class="mt-8">
+            <div id="phase-selector-container" class="mb-8 box rounded-xl grid grid-cols-1 lg:grid-cols-3 lg:gap-8 items-center p-4">
+                <div class="lg:col-span-1 mb-4 lg:mb-0">
+                    <!-- === MODIFIED: Headline style updated === -->
+                    <h2 class="text-3xl whitespace-nowrap font-bold" style="color: #45658e; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Interaktiver Trainingsplan</h2>
+                </div>
+                <div class="lg:col-span-2 flex items-center gap-4">
+                    <div id="phase-selector" class="flex-grow grid grid-cols-4 gap-2">
+                        <button data-phase="1" class="phase-btn phase-button font-semibold py-2 px-4 rounded-xl text-sm"><span>1. Grundlagen</span></button>
+                        <button data-phase="2" class="phase-btn phase-button font-semibold py-2 px-4 rounded-xl text-sm"><span>2. Präzision</span></button>
+                        <button data-phase="3" class="phase-btn phase-button font-semibold py-2 px-4 rounded-xl text-sm"><span>3. Matchpraxis</span></button>
+                        <button data-phase="4" class="phase-btn phase-button font-semibold py-2 px-4 rounded-xl text-sm"><span>4. Turnierfokus</span></button>
+                    </div>
+                    <button id="import-export-btn" class="flex-shrink-0" aria-label="Daten importieren oder exportieren">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="content-area" class="gradient-bg p-6 rounded-2xl relative box">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <div class="lg:col-span-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3 text-gray-900">Ziele dieser Phase</h3>
+                            <ul id="phase-goals" class="list-disc list-outside space-y-2 text-gray-700 ml-5"></ul>
+                        </div>
+                        <div class="bg-white/60 p-4 rounded-xl my-8">
+                            <h3 class="text-lg font-bold mb-3 text-center text-gray-900">Wöchentlicher Fokus</h3>
+                            <div class="chart-container">
+                                <canvas id="weeklyFocusChart"></canvas>
+                            </div>
+                            <div id="weeklyFocusLegend" class="flex justify-center flex-nowrap gap-x-3 mt-4 text-xs"></div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3 text-gray-900">Wichtige Tipps</h3>
+                            <div class="space-y-4">
+                                <div class="p-4 rounded-xl box">
+                                    <h4 class="font-bold text-lg mb-2">🧠 Mentale Stärke</h4>
+                                    <p class="text-gray-600 text-sm">Tennis ist Kopfsache. Bleib geduldig, analysiere Fehler konstruktiv und lass dich von Rückschlägen nicht entmutigen.</p>
+                                </div>
+                                <div class="p-4 rounded-xl box">
+                                    <h4 class="font-bold text-lg mb-2">🏃‍♂️ Konstanz schlägt Intensität</h4>
+                                    <p class="text-gray-600 text-sm">Regelmäßiges, geplantes Training ist effektiver als unregelmäßige, überintensive Einheiten. Höre auf deinen Körper, um Verletzungen zu vermeiden.</p>
+                                </div>
+                                 <div class="p-4 rounded-xl box">
+                                    <h4 class="font-bold text-lg mb-2">🤝 Trainingspartner</h4>
+                                    <p class="text-gray-600 text-sm">Suche dir nach den ersten Monaten Spielpartner. Regelmäßige Matches sind der beste Weg, um das Gelernte anzuwenden und Matchpraxis zu sammeln.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="right-content-column" class="lg:col-span-2 relative">
+                        <div class="flex justify-between items-center mb-4">
+                            <button id="prev-week-btn" class="py-1.5 px-3.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">←</button>
+                            <div class="flex items-center gap-3">
+                                <h3 id="current-week-display-wrapper" class="text-2xl font-bold text-gray-900 text-center cursor-pointer"><span id="current-week-display"></span></h3>
+                                <div id="week-edit-controls" class="hidden items-center gap-2">
+                                     <button id="add-week-btn" class="edit-mode-icon-btn" aria-label="Neue Woche hinzufügen"><i class="fa-solid fa-plus"></i></button>
+                                     <button id="delete-week-btn" class="edit-mode-icon-btn" aria-label="Diese Woche löschen"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                            <button id="next-week-btn" class="py-1.5 px-3.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">→</button>
+                        </div>
+                        <div id="weekly-plan" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
+                            <button id="edit-mode-toggle-btn" class="absolute bottom-4 right-0" aria-label="Plan bearbeiten"></button>
+                        </div>
+                        
+                        <div class="mt-8 p-6 rounded-2xl box">
+                            <h2 class="text-2xl font-bold text-center mb-6 text-gray-900">Dein Trainingsfortschritt</h2>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white rounded-xl">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider rounded-tl-xl">Kategorie</th>
+                                            <th class="py-3 px-4 text-center text-sm font-semibold uppercase tracking-wider" style="color: #88bab8;">Durchgeführt</th>
+                                            <th class="py-3 px-4 text-center text-sm font-semibold uppercase tracking-wider" style="color: #ec747c;">Verpasst</th>
+                                            <th class="py-3 px-4 text-center text-sm font-semibold uppercase tracking-wider" style="color: #54749b;">Offen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stats-table-body" class="divide-y divide-gray-200"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 p-6 rounded-2xl box">
+                            <h2 class="text-2xl font-bold text-center mb-6 text-gray-900">Deine Gewichtsentwicklung</h2>
+                            <div style="height: 300px;">
+                                <canvas id="weight-curve-chart"></canvas>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                 <footer id="version-footer" class="text-right text-xs mt-4" style="color: #c4c3c4;"></footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="exercise-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+            <div class="p-6 md:p-8">
+                <div class="flex justify-between items-start mb-4">
+                    <h2 id="modal-title" class="text-2xl md:text-3xl font-bold"></h2>
+                    <button id="modal-close-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+                </div>
+                <div id="modal-content" class="space-y-4 modal-content-area prose"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-training-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
+            <div class="p-6 md:p-8">
+                <div class="flex justify-between items-start mb-4">
+                    <h2 id="add-modal-title" class="text-2xl md:text-3xl font-bold"></h2>
+                    <button id="add-training-close-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+                </div>
+                <form id="add-training-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="add-training-day-select" class="block text-sm font-medium text-gray-700">Wochentag:</label>
+                            <select id="add-training-day-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-3"></select>
+                        </div>
+                        <div>
+                            <label for="add-training-type-input" class="block text-sm font-medium text-gray-700">Trainingsart:</label>
+                            <input type="text" id="add-training-type-input" list="training-types-list" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-3" placeholder="z.B. Krafttraining" required>
+                            <datalist id="training-types-list"></datalist>
+                        </div>
+                        <div>
+                            <label for="add-training-icon-input" class="block text-sm font-medium text-gray-700">Icon (Emoji):</label>
+                            <input type="text" id="add-training-icon-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-3" placeholder="z.B. 🏋️">
+                        </div>
+                        <div>
+                            <label for="add-training-short-description-input" class="block text-sm font-medium text-gray-700">Kurzbeschreibung:</label>
+                            <textarea id="add-training-short-description-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" rows="3" placeholder="Wird auf der Wochenkarte angezeigt."></textarea>
+                        </div>
+                        <div>
+                            <label for="add-training-description-input" class="block text-sm font-medium text-gray-700">Detailbeschreibung:</label>
+                            <textarea id="add-training-description-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" rows="6" placeholder="Wird im Detailfenster angezeigt. Markdown wird unterstützt."></textarea>
+                        </div>
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button type="button" id="add-training-cancel-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors">Abbrechen</button>
+                            <button type="submit" id="add-training-submit-btn" class="text-white font-bold py-2 px-4 rounded-lg transition-colors">Speichern</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="import-export-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
+            <div class="p-6 md:p-8">
+                <div class="flex justify-between items-start mb-4">
+                    <h2 class="text-2xl md:text-3xl font-bold">Daten Import & Export</h2>
+                    <button id="import-export-close-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold">Daten exportieren</h3>
+                        <p class="text-sm text-gray-600 mb-2">Sichere deinen gesamten Fortschritt und deine personalisierten Pläne in einer Datei.</p>
+                        <button id="export-data-btn" class="w-full font-bold py-2 px-4 rounded-lg transition-colors">Backup-Datei herunterladen</button>
+                    </div>
+                    <div class="border-t pt-6">
+                        <h3 class="text-lg font-semibold">Daten importieren</h3>
+                        <p class="text-sm text-gray-600 mb-2">Stelle deine Daten aus einer Backup-Datei wieder her. Achtung: Alle aktuellen Daten werden überschrieben!</p>
+                        <label for="import-file-input" class="custom-file-upload text-center w-full block">
+                            <i class="fa-solid fa-upload mr-2"></i> Backup-Datei auswählen
+                        </label>
+                        <input type="file" id="import-file-input" accept=".json">
+                        <div id="import-feedback-area" class="mt-2 text-sm"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+            <div class="p-6 text-center">
+                <h2 id="confirm-modal-title" class="text-xl font-bold mb-4">Aktion bestätigen</h2>
+                <p id="confirm-modal-text" class="mb-6"></p>
+                <div class="flex justify-center gap-4">
+                    <button id="confirm-modal-cancel-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors">Abbrechen</button>
+                    <button id="confirm-modal-confirm-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">Bestätigen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        Chart.register(ChartDataLabels);
+        
+        const HTML_VERSION = "1.1";
+        const DATA_MODEL_VERSION = 3;
+
+        // --- State Management ---
+        let state = {
+            currentWeekIndex: 0,
+            isEditMode: false,
+            startDateOfPlan: null,
+            trainingProgress: {},
+            trainingTypes: {}, 
+            weeklySchedules: [], 
+            planData: {} 
+        };
+
+        // --- Constants ---
+        const DAYS_OF_WEEK = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+        let weeklyFocusChart;
+        let weightCurveChart;
+
+        // --- DOM Elements ---
+        const DOMElements = {
+            phaseSelector: document.getElementById('phase-selector'),
+            phaseGoals: document.getElementById('phase-goals'),
+            weeklyPlan: document.getElementById('weekly-plan'),
+            currentWeekDisplay: document.getElementById('current-week-display'),
+            currentWeekContainer: document.getElementById('current-week-display-wrapper'),
+            prevWeekBtn: document.getElementById('prev-week-btn'),
+            nextWeekBtn: document.getElementById('next-week-btn'),
+            statsTableBody: document.getElementById('stats-table-body'),
+            editModeToggleBtn: document.getElementById('edit-mode-toggle-btn'),
+            importExportBtn: document.getElementById('import-export-btn'),
+            weekEditControls: document.getElementById('week-edit-controls'),
+            addWeekBtn: document.getElementById('add-week-btn'),
+            deleteWeekBtn: document.getElementById('delete-week-btn'),
+            // Modals
+            exerciseModal: document.getElementById('exercise-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            modalContent: document.getElementById('modal-content'),
+            modalCloseBtn: document.getElementById('modal-close-btn'),
+            addTrainingModal: document.getElementById('add-training-modal'),
+            addModalTitle: document.getElementById('add-modal-title'),
+            addTrainingForm: document.getElementById('add-training-form'),
+            addTrainingCloseBtn: document.getElementById('add-training-close-btn'),
+            addTrainingCancelBtn: document.getElementById('add-training-cancel-btn'),
+            addTrainingDaySelect: document.getElementById('add-training-day-select'),
+            addTrainingTypeInput: document.getElementById('add-training-type-input'),
+            addTrainingIconInput: document.getElementById('add-training-icon-input'),
+            addTrainingDescriptionInput: document.getElementById('add-training-description-input'),
+            addTrainingShortDescriptionInput: document.getElementById('add-training-short-description-input'),
+            trainingTypesList: document.getElementById('training-types-list'),
+            importExportModal: document.getElementById('import-export-modal'),
+            importExportCloseBtn: document.getElementById('import-export-close-btn'),
+            exportDataBtn: document.getElementById('export-data-btn'),
+            importFileInput: document.getElementById('import-file-input'),
+            importFeedbackArea: document.getElementById('import-feedback-area'),
+            confirmModal: document.getElementById('confirm-modal'),
+            confirmModalTitle: document.getElementById('confirm-modal-title'),
+            confirmModalText: document.getElementById('confirm-modal-text'),
+            confirmModalConfirmBtn: document.getElementById('confirm-modal-confirm-btn'),
+            confirmModalCancelBtn: document.getElementById('confirm-modal-cancel-btn'),
+            versionFooter: document.getElementById('version-footer')
+        };
+
+        // --- Utility ---
+        const parseDate = (dateString) => new Date(dateString);
+        const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
+
+        const parseMarkdown = (text) => {
+            if (!text) return '';
+            const lines = text.split('\n');
+            let html = '';
+            let listType = null;
+            const processInline = (line) => line
+                .replace(/\*\*(.*?)\*\*|__(.*?)__/g, '<strong>$1$2</strong>')
+                .replace(/\*(.*?)\*|_(.*?)_/g, '<em>$1$2</em>');
+            for (const line of lines) {
+                if (line.startsWith('### ')) {
+                    if (listType) { html += `</${listType}>`; listType = null; }
+                    html += `<h3>${processInline(line.substring(4))}</h3>`;
+                    continue;
+                }
+                if (line.startsWith('## ')) {
+                    if (listType) { html += `</${listType}>`; listType = null; }
+                    html += `<h2>${processInline(line.substring(3))}</h2>`;
+                    continue;
+                }
+                if (line.startsWith('# ')) {
+                    if (listType) { html += `</${listType}>`; listType = null; }
+                    html += `<h1>${processInline(line.substring(2))}</h1>`;
+                    continue;
+                }
+                const olMatch = line.match(/^\s*\d+\.\s+(.*)/);
+                const ulMatch = line.match(/^\s*([*+-])\s+(.*)/);
+                if (olMatch) {
+                    if (listType !== 'ol') { if (listType) html += `</${listType}>`; html += '<ol>'; listType = 'ol'; }
+                    html += `<li>${processInline(olMatch[1])}</li>`;
+                } else if (ulMatch) {
+                    if (listType !== 'ul') { if (listType) html += `</${listType}>`; html += '<ul>'; listType = 'ul'; }
+                    html += `<li>${processInline(ulMatch[2])}</li>`;
+                } else {
+                    if (listType) { html += `</${listType}>`; listType = null; }
+                    if (line.trim() !== '') html += `<p>${processInline(line)}</p>`;
+                }
+            }
+            if (listType) html += `</${listType}>`;
+            return html;
+        };
+
+        const initializeDefaultData = () => {
+            const defaultPlanData = {
+                1: { goals: ["Sicheres Beherrschen von Vorhand und Rückhand (Technik, Treffpunkt, Bewegung).", "Erste Ansätze für Aufschlag und Volley entwickeln.", "Aufbau der grundlegenden Beweglichkeit und Ausdauer."], schedule: [{ day: 'Montag', type: 'Ballwand' }, { day: 'Dienstag', type: 'Regeneration' }, { day: 'Mittwoch', type: 'Pause' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Ballwand' }, { day: 'Sonntag', type: 'Regeneration' }] },
+                2: { goals: ["Verbesserung der tennisspezifischen Ausdauer.", "Konstantere Schläge unter leichter Bewegung.", "Erste sichere Ansätze beim Volley."], schedule: [{ day: 'Montag', type: 'Ballwand' }, { day: 'Dienstag', type: 'Ausdauer' }, { day: 'Mittwoch', type: 'Pause' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Regeneration' }, { day: 'Samstag', type: 'Ballwand' }, { day: 'Sonntag', type: 'Pause' }] },
+                3: { goals: ["Aufbau tennisspezifischer Kraft und Explosivität.", "Verbesserung des Aufschlags (Platzierung & Power).", "Einführung einfacher Spielstrategien im Training."], schedule: [{ day: 'Montag', type: 'Krafttraining' }, { day: 'Dienstag', type: 'Ballwand' }, { day: 'Mittwoch', type: 'Ausdauer' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Regeneration' }, { day: 'Sonntag', 'type': 'Pause' }] },
+                4: { goals: ["Anwendung aller Schläge und Taktiken im Match.", "Verbesserung der mentalen Stärke unter Matchbedingungen.", "Sichere Aufschlag- und Return-Games.", "Bereitschaft für Fun-Turniere."], schedule: [{ day: 'Montag', type: 'Trainingsspiel' }, { day: 'Dienstag', type: 'Explosivität' }, { day: 'Mittwoch', type: 'Ballwand' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Regeneration' }, { day: 'Sonntag', 'type': 'Pause' }] }
+            };
+
+            const defaultTrainingTypes = {
+                Coaching: { icon: '🎾', shortDescription: "Arbeite mit deinem Trainer gezielt an deinen technischen Schwächen.", description: "...", category: 'Training' },
+                Ballwand: { icon: '🧱', shortDescription: "Konzentriere dich auf Rhythmus und saubere Technik bei jedem Schlag.", description: "...", category: 'Training' },
+                Ausdauer: { icon: '🏃‍♂️', shortDescription: "Stärke dein Herz-Kreislauf-System für längere, intensivere Matches.", description: "...", category: 'Training' },
+                Krafttraining: { icon: '🏋️', shortDescription: "Baue die nötige Kraft für explosive Schläge und Bewegungen auf.", description: "...", category: 'Training' },
+                Explosivität: { icon: '⚡', shortDescription: "Verbessere deine Antrittsschnelligkeit und deine explosive Kraft auf dem Platz.", description: "...", category: 'Training' },
+                Trainingsspiel: { icon: '🏆', shortDescription: "Wende deine gelernten Fähigkeiten unter echtem Wettkampfdruck an.", description: "...", category: 'Match' },
+                Tennismatch: { icon: '🆚', shortDescription: "Spiele ein volles Match unter Wettkampfbedingungen.", description: "Spiele ein komplettes Match über zwei Gewinnsätze. Konzentriere dich auf deine Match-Routine und mentale Stärke.", category: 'Match' },
+                Regeneration: { icon: '🌿', shortDescription: "Gib deinem Körper die nötige Zeit zur aktiven Erholung.", description: "...", category: 'Regeneration' },
+                Pause: { icon: '😴', shortDescription: "Ein Ruhetag ist entscheidend für deine langfristige Leistungssteigerung.", description: "...", category: 'Pause' },
+                Leer: { icon: '', shortDescription: '', description: '', category: 'Leer' }
+            };
+            
+            return { defaultPlanData, defaultTrainingTypes };
+        };
+        
+        const migrateDataModel = (data) => {
+            if (!data.version || data.version < DATA_MODEL_VERSION) {
+                console.log(`Altes Datenmodell (v${data.version || 1}) erkannt. Führe Migration zu v${DATA_MODEL_VERSION} durch...`);
+                
+                const { defaultPlanData, defaultTrainingTypes } = initializeDefaultData();
+                const migratedData = {
+                    version: DATA_MODEL_VERSION,
+                    startDateOfPlan: data.startDateOfPlan,
+                    trainingProgress: data.trainingProgress || {},
+                    trainingTypes: data.trainingTypes || deepClone(defaultTrainingTypes),
+                    weeklySchedules: []
+                };
+
+                if (data.planData) { 
+                    const getPhaseForWeek = (weekIndex) => {
+                        if (weekIndex <= 10) return 1; if (weekIndex <= 21) return 2; if (weekIndex <= 32) return 3; return 4;
+                    };
+                    for(let i = 0; i < 44; i++) {
+                        const phase = getPhaseForWeek(i);
+                        migratedData.weeklySchedules.push({
+                            phase: phase,
+                            schedule: deepClone(data.planData[phase].schedule)
+                        });
+                    }
+                } else { 
+                     const getPhaseForWeek = (weekIndex) => {
+                        if (weekIndex <= 10) return 1; if (weekIndex <= 21) return 2; if (weekIndex <= 32) return 3; return 4;
+                    };
+                    for(let i = 0; i < 44; i++) {
+                        const phase = getPhaseForWeek(i);
+                        migratedData.weeklySchedules.push({
+                            phase: phase,
+                            schedule: deepClone(defaultPlanData[phase].schedule)
+                        });
+                    }
+                }
+                console.log("Migration abgeschlossen.");
+                return migratedData;
+            }
+            return data;
+        };
+
+        const saveState = () => {
+            try {
+                localStorage.setItem('tennisPlanState', JSON.stringify({
+                    version: DATA_MODEL_VERSION,
+                    startDateOfPlan: state.startDateOfPlan.toISOString(),
+                    trainingProgress: state.trainingProgress,
+                    weeklySchedules: state.weeklySchedules,
+                    trainingTypes: state.trainingTypes
+                }));
+            } catch (e) { console.error("Fehler beim Speichern des Zustands:", e); }
+        };
+
+        const initState = () => {
+            const { defaultPlanData, defaultTrainingTypes } = initializeDefaultData();
+            state.startDateOfPlan = new Date('2025-06-23T00:00:00Z');
+            state.trainingTypes = deepClone(defaultTrainingTypes);
+            state.trainingProgress = {};
+            state.weeklySchedules = [];
+            const getPhaseForWeek = (weekIndex) => {
+                if (weekIndex <= 10) return 1; if (weekIndex <= 21) return 2; if (weekIndex <= 32) return 3; return 4;
+            };
+            for(let i = 0; i < 44; i++) {
+                const phase = getPhaseForWeek(i);
+                state.weeklySchedules.push({
+                    phase: phase,
+                    schedule: deepClone(defaultPlanData[phase].schedule)
+                });
+            }
+            saveState();
+        };
+        
+        const loadState = () => {
+            try {
+                const storedStateJSON = localStorage.getItem('tennisPlanState');
+                if (!storedStateJSON) { initState(); return; }
+                
+                let storedState = JSON.parse(storedStateJSON);
+                
+                storedState = migrateDataModel(storedState);
+
+                state.startDateOfPlan = parseDate(storedState.startDateOfPlan);
+                if (isNaN(state.startDateOfPlan.getTime())) { initState(); return; }
+
+                state.trainingProgress = storedState.trainingProgress;
+                state.weeklySchedules = storedState.weeklySchedules;
+                state.trainingTypes = storedState.trainingTypes;
+
+            } catch (e) {
+                console.error("Fehler beim Laden des Zustands:", e);
+                initState();
+            }
+
+            state.currentWeekIndex = getActualCurrentWeekIndex();
+        };
+
+        // --- Logic ---
+        const getMondayOfWeek = (weekIndex) => {
+            const monday = new Date(state.startDateOfPlan);
+            monday.setDate(monday.getDate() + (weekIndex * 7));
+            const dayOfWeek = monday.getDay();
+            const diffToMonday = monday.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            monday.setDate(diffToMonday);
+            monday.setHours(0, 0, 0, 0);
+            return monday;
+        };
+        
+        const getActualCurrentWeekIndex = () => {
+            const today = new Date();
+            const diffTime = today.getTime() - state.startDateOfPlan.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const weekIndex = Math.max(0, Math.floor(diffDays / 7));
+            return Math.min(weekIndex, state.weeklySchedules.length - 1);
+        };
+
+        // --- Rendering ---
+        const renderAll = () => {
+            renderPhase();
+            renderWeek();
+            renderChart();
+            renderStatistics();
+            renderWeightChart();
+            renderUIState();
+        };
+        
+        const renderPhase = () => {
+            const { defaultPlanData } = initializeDefaultData();
+            const currentPhase = state.weeklySchedules[state.currentWeekIndex].phase;
+            const phaseData = defaultPlanData[currentPhase];
+            DOMElements.phaseSelector.querySelectorAll('button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.phase == currentPhase);
+            });
+            DOMElements.phaseGoals.innerHTML = phaseData.goals.map(goal => `<li>${goal}</li>`).join('');
+        };
+        
+        const renderWeek = () => {
+            const totalWeeks = state.weeklySchedules.length;
+            const monday = getMondayOfWeek(state.currentWeekIndex);
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            const dateFormatter = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            DOMElements.currentWeekDisplay.textContent = `Woche ${state.currentWeekIndex + 1} / ${totalWeeks} (${dateFormatter.format(monday)} - ${dateFormatter.format(sunday)})`;
+
+            while(DOMElements.weeklyPlan.firstChild && DOMElements.weeklyPlan.firstChild !== DOMElements.editModeToggleBtn) {
+                DOMElements.weeklyPlan.removeChild(DOMElements.weeklyPlan.firstChild);
+            }
+            
+            const schedule = state.weeklySchedules[state.currentWeekIndex].schedule;
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(monday);
+                day.setDate(monday.getDate() + i);
+                const card = createTrainingCard(day, i, schedule[i]);
+                DOMElements.weeklyPlan.insertBefore(card, DOMElements.editModeToggleBtn);
+            }
+        };
+        
+        const createTrainingCard = (day, dayIndex, activity) => {
+            const card = document.createElement('div');
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const isPast = day < today;
+            const isToday = day.getTime() === today.getTime();
+            
+            const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+            const dayProgress = state.trainingProgress[dateKey] || { completed: false };
+            const activityType = activity ? activity.type : 'Leer';
+            const trainingDetails = state.trainingTypes[activityType] || {};
+            const isPause = activityType === 'Pause';
+            const isEmptySlot = activityType === 'Leer';
+            const dayFormatted = new Intl.DateTimeFormat('de-DE', { day: 'numeric', month: 'numeric' }).format(day);
+            
+            const dateTextColorClass = dayProgress.completed ? 'text-[#ecedee]' : 'text-gray-500';
+
+            card.className = 'training-card p-4 rounded-xl flex flex-col justify-between transition-all duration-200 relative bg-white';
+            card.dataset.activity = activityType;
+            card.dataset.date = dateKey;
+            card.dataset.dayIndex = dayIndex;
+            
+            let innerHTML = `
+                <div>
+                    <p class="font-bold text-sm ${dateTextColorClass}">${DAYS_OF_WEEK[dayIndex]}, ${dayFormatted}</p>
+                    <p class="font-bold text-lg mt-1 flex items-center gap-2">
+                        ${isEmptySlot ? '<span class="text-gray-400">Frei</span>' : `${trainingDetails.icon || ''} ${activityType}`}
+                    </p>
+                    <div class="text-xs font-light mt-2 prose">${parseMarkdown(trainingDetails.shortDescription)}</div>
+                </div>`;
+
+            if (state.isEditMode) {
+                card.classList.add('border-2', 'border-dashed', 'border-gray-400', 'cursor-pointer', 'hover:bg-gray-100');
+                if (!isEmptySlot) {
+                     innerHTML += `<button class="delete-training-btn absolute top-1 right-1 rounded-full w-6 h-6 flex items-center justify-center text-lg z-10"><i class="fa-solid fa-circle-minus"></i></button>`;
+                }
+            } else {
+                if (dayProgress.completed) {
+                    card.style.backgroundColor = '#88bab8'; 
+                    card.style.borderColor = '#63a09d';
+                } else if (isPast && !isPause && !isEmptySlot) {
+                    card.style.backgroundColor = '#ead2d5'; 
+                    card.style.borderColor = '#c9b2b5';
+                } else if (isToday) {
+                    card.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2'); 
+                } 
+                
+                if (!isEmptySlot) {
+                    card.classList.add('cursor-pointer', 'hover:shadow-xl', 'hover:-translate-y-1');
+                } else {
+                    card.classList.add('opacity-80');
+                }
+            }
+            
+            card.innerHTML = innerHTML;
+            return card;
+        };
+
+        const renderUIState = () => {
+            DOMElements.editModeToggleBtn.innerHTML = state.isEditMode ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-pencil"></i>';
+            DOMElements.editModeToggleBtn.classList.toggle('edit-mode', state.isEditMode);
+            DOMElements.editModeToggleBtn.classList.toggle('view-mode', !state.isEditMode);
+            
+            DOMElements.weekEditControls.classList.toggle('hidden', !state.isEditMode);
+            DOMElements.weekEditControls.classList.toggle('flex', state.isEditMode);
+
+            DOMElements.prevWeekBtn.disabled = state.currentWeekIndex === 0;
+            DOMElements.nextWeekBtn.disabled = state.currentWeekIndex >= state.weeklySchedules.length - 1;
+            DOMElements.versionFooter.textContent = `Interaktiver Trainingsplan - v${HTML_VERSION} - Datenmodell v${DATA_MODEL_VERSION}`;
+        };
+
+        const renderChart = () => {
+            const schedule = state.weeklySchedules[state.currentWeekIndex].schedule;
+            
+            const categoryCounts = schedule.reduce((acc, item) => {
+                const type = item ? item.type : 'Leer';
+                const category = state.trainingTypes[type]?.category || 'Leer';
+                if (category !== 'Leer') {
+                    acc[category] = (acc[category] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const chartLabels = ['Training', 'Match', 'Regeneration', 'Pause'];
+            const chartDataValues = chartLabels.map(label => categoryCounts[label] || 0);
+            const backgroundColors = ['rgba(44, 82, 130, 0.8)', '#ed989f', 'rgba(136, 186, 184, 0.8)', '#c1c3c6'];
+            const borderColors = ['#2C5282', '#d3848b', '#88bab8', '#a9abb0'];
+
+            const chartData = {
+                labels: chartLabels,
+                datasets: [{
+                    data: chartDataValues,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            };
+
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        formatter: (value, context) => {
+                            const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            if (total === 0) return '';
+                            const percentage = (value / total) * 100;
+                            return percentage > 0 ? `${Math.round(percentage)}%` : '';
+                        },
+                        color: (context) => {
+                            return [2, 3].includes(context.dataIndex) ? '#2c313e' : '#ecedee';
+                        },
+                        font: { weight: 'bold', size: 14 },
+                        textShadow: { stroke: 'rgba(0,0,0,0.4)', blur: 4 }
+                    }
+                }
+            };
+            
+            const legendContainer = document.getElementById('weeklyFocusLegend');
+            legendContainer.innerHTML = ''; 
+
+            if (weeklyFocusChart) {
+                weeklyFocusChart.data = chartData;
+                weeklyFocusChart.options = chartOptions;
+                weeklyFocusChart.update();
+            } else {
+                const ctx = document.getElementById('weeklyFocusChart').getContext('2d');
+                weeklyFocusChart = new Chart(ctx, { type: 'doughnut', data: chartData, options: chartOptions });
+            }
+            
+            chartLabels.forEach((label, index) => {
+                if(chartDataValues[index] > 0) {
+                    const li = document.createElement('div');
+                    li.className = 'flex items-center';
+                    li.innerHTML = `<span class="w-4 h-4 mr-2 rounded" style="background-color: ${backgroundColors[index]}; border: 1px solid ${borderColors[index]}"></span><span>${label}</span>`;
+                    legendContainer.appendChild(li);
+                }
+            });
+        };
+
+        const renderStatistics = () => {
+            let totalCompleted = 0, totalMissed = 0, totalOpen = 0;
+            let weekCompleted = 0, weekMissed = 0, weekOpen = 0;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const mondayOfCurrentWeek = getMondayOfWeek(state.currentWeekIndex);
+            const sundayOfCurrentWeek = new Date(mondayOfCurrentWeek);
+            sundayOfCurrentWeek.setDate(mondayOfCurrentWeek.getDate() + 6);
+
+            for (let weekIdx = 0; weekIdx < state.weeklySchedules.length; weekIdx++) {
+                const schedule = state.weeklySchedules[weekIdx].schedule;
+                const mondayOfWeek = getMondayOfWeek(weekIdx);
+
+                for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+                    const activity = schedule[dayIdx];
+                    if (!activity || activity.type === 'Pause' || activity.type === 'Leer') continue;
+
+                    const day = new Date(mondayOfWeek);
+                    day.setDate(mondayOfWeek.getDate() + dayIdx);
+                    const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+                    
+                    const progress = state.trainingProgress[dateKey] || { completed: false };
+                    const isPast = day < today;
+                    const isInCurrentWeek = day >= mondayOfCurrentWeek && day <= sundayOfCurrentWeek;
+
+                    if (progress.completed) {
+                        totalCompleted++;
+                        if (isInCurrentWeek) weekCompleted++;
+                    } else if (isPast) {
+                        totalMissed++;
+                        if (isInCurrentWeek) weekMissed++;
+                    } else {
+                        totalOpen++;
+                        if (isInCurrentWeek) weekOpen++;
+                    }
+                }
+            }
+
+            DOMElements.statsTableBody.innerHTML = `
+                <tr>
+                    <td class="py-2 px-4 font-bold">Gesamt</td>
+                    <td class="py-2 px-4 text-center font-bold" style="color: #88bab8;">${totalCompleted}</td>
+                    <td class="py-2 px-4 text-center font-bold" style="color: #ec747c;">${totalMissed}</td>
+                    <td class="py-2 px-4 text-center font-bold" style="color: #54749b;">${totalOpen}</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 font-bold">Aktuelle Woche</td>
+                    <td class="py-2 px-4 text-center font-bold" style="color: #88bab8;">${weekCompleted}</td>
+                    <td class="py-2 px-4 text-center font-bold" style="color: #ec747c;">${weekMissed}</td>
+                    <td class="py-2 px-4 text-center font-bold" style="color: #54749b;">${weekOpen}</td>
+                </tr>`;
+        };
+
+        const renderWeightChart = () => {
+            const weightData = Object.entries(state.trainingProgress)
+                .filter(([, data]) => data.weight != null)
+                .map(([date, data]) => ({ date: parseDate(date), weight: data.weight }))
+                .sort((a, b) => a.date - b.date);
+
+            const labels = weightData.map(d => new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit' }).format(d.date));
+            const dataPoints = weightData.map(d => d.weight);
+
+            const chartConfig = {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Gewicht (kg)',
+                        data: dataPoints,
+                        borderColor: '#ed989f',
+                        backgroundColor: 'rgba(237, 152, 159, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: false }, x: {} },
+                    plugins: { legend: { display: false }, datalabels: { display: false } }
+                }
+            };
+
+            const ctx = document.getElementById('weight-curve-chart').getContext('2d');
+            if (weightCurveChart) {
+                weightCurveChart.data = chartConfig.data;
+                weightCurveChart.options = chartConfig.options;
+                weightCurveChart.update();
+            } else {
+                weightCurveChart = new Chart(ctx, chartConfig);
+            }
+        };
+
+        // --- Modals ---
+        const showModal = (modal) => {
+            modal.classList.remove('invisible', 'opacity-0');
+            document.body.style.overflow = 'hidden';
+        };
+
+        const hideModal = (modal) => {
+            modal.classList.add('invisible', 'opacity-0');
+            document.body.style.overflow = '';
+        };
+        
+        const showConfirmModal = (text, onConfirm) => {
+            DOMElements.confirmModalText.textContent = text;
+            showModal(DOMElements.confirmModal);
+
+            const newConfirmBtn = DOMElements.confirmModalConfirmBtn.cloneNode(true);
+            DOMElements.confirmModalConfirmBtn.parentNode.replaceChild(newConfirmBtn, DOMElements.confirmModalConfirmBtn);
+            DOMElements.confirmModalConfirmBtn = newConfirmBtn;
+            
+            DOMElements.confirmModalConfirmBtn.addEventListener('click', () => {
+                hideModal(DOMElements.confirmModal);
+                onConfirm();
+            }, { once: true });
+        };
+
+        const showExerciseModal = (activityType, dateKey) => {
+            const trainingDetails = state.trainingTypes[activityType] || {};
+            const contentHTML = parseMarkdown(trainingDetails.description);
+            const icon = trainingDetails.icon || '';
+            
+            DOMElements.modalTitle.innerHTML = `${icon} ${activityType}`;
+            
+            let fullContent = contentHTML;
+            if (activityType !== 'Pause' && activityType !== 'Leer') {
+                const progress = state.trainingProgress[dateKey] || {};
+                const isFuture = parseDate(dateKey) > new Date();
+                const isCompleted = progress.completed;
+                const commentHTML = parseMarkdown(progress.comment) || 'Kein Kommentar.';
+
+                fullContent += `
+                    <div class="flex items-center mt-6 border-t pt-4">
+                        <input type="checkbox" id="modal-checkbox" data-date="${dateKey}" ${isCompleted ? 'checked' : ''} ${isFuture ? 'disabled' : ''} class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <label for="modal-checkbox" class="ml-3 text-lg font-semibold">Erledigt</label>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="font-semibold mb-2">Kommentare:</h4>
+                        <textarea id="modal-comment" data-date="${dateKey}" placeholder="Kommentar hinzufügen..." class="text-sm w-full p-2 border rounded-md ${isCompleted || isFuture ? 'hidden' : ''}" ${isFuture ? 'disabled' : ''}>${progress.comment || ''}</textarea>
+                        <div id="modal-comment-display" class="modal-comment-display ${!isCompleted ? 'hidden' : ''}">${commentHTML}</div>
+                    </div>`;
+                
+                const dayIndex = (parseDate(dateKey).getDay() + 6) % 7;
+                if (dayIndex === 6) { 
+                    const weight = progress.weight;
+                    const weightDisplay = weight ? `${weight} kg` : 'Kein Gewicht eingetragen.';
+                    fullContent += `
+                        <div class="mt-4 pt-4 border-t">
+                             <h4 class="font-semibold mb-2">Gewicht (kg):</h4>
+                             <input type="number" step="0.1" id="modal-weight-input" data-date="${dateKey}" placeholder="z.B. 80.5" class="text-sm w-full p-2 border rounded-md ${isCompleted || isFuture ? 'hidden' : ''}" value="${weight || ''}" ${isFuture ? 'disabled' : ''}>
+                             <div id="modal-weight-display" class="bg-gray-100 border rounded-md p-2 text-sm mt-2 ${!isCompleted ? 'hidden' : ''}">${weightDisplay}</div>
+                        </div>`;
+                }
+            }
+            DOMElements.modalContent.innerHTML = fullContent;
+            showModal(DOMElements.exerciseModal);
+        };
+
+        const renderTrainingTypeDatalist = () => {
+            DOMElements.trainingTypesList.innerHTML = Object.keys(state.trainingTypes)
+                .filter(type => type !== 'Leer' && type !== 'Pause')
+                .map(type => `<option value="${type}"></option>`)
+                .join('');
+        };
+
+        const showAddTrainingModal = (dayIndex, activityType) => {
+            const isEditing = !!activityType && activityType !== 'Leer';
+            DOMElements.addModalTitle.textContent = isEditing ? 'Training bearbeiten' : 'Training hinzufügen';
+            DOMElements.addTrainingDaySelect.innerHTML = DAYS_OF_WEEK.map((day, i) => `<option value="${i}" ${i === dayIndex ? 'selected' : ''}>${day}</option>`).join('');
+            
+            const details = isEditing ? state.trainingTypes[activityType] : {};
+            DOMElements.addTrainingTypeInput.value = isEditing ? activityType : '';
+            DOMElements.addTrainingIconInput.value = details.icon || '';
+            DOMElements.addTrainingShortDescriptionInput.value = details.shortDescription || '';
+            DOMElements.addTrainingDescriptionInput.value = details.description || '';
+
+            DOMElements.addTrainingForm.dataset.dayIndex = dayIndex;
+            renderTrainingTypeDatalist();
+            showModal(DOMElements.addTrainingModal);
+        };
+        
+        const handleExportClick = () => {
+            const dataToExport = {
+                version: DATA_MODEL_VERSION,
+                exportDate: new Date().toISOString(),
+                startDateOfPlan: state.startDateOfPlan.toISOString(),
+                trainingProgress: state.trainingProgress,
+                weeklySchedules: state.weeklySchedules,
+                trainingTypes: state.trainingTypes,
+            };
+            const jsonString = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `trainingsplan_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        const handleImportChange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    let importedData = JSON.parse(event.target.result);
+                    
+                    importedData = migrateDataModel(importedData);
+
+                    if (importedData.version !== DATA_MODEL_VERSION) {
+                         throw new Error(`Datenmodell Version ${importedData.version} wird nicht unterstützt.`);
+                    }
+
+                    const feedbackArea = DOMElements.importFeedbackArea;
+                    feedbackArea.innerHTML = `
+                        <p>Datei "<strong>${file.name}</strong>" geladen.</p>
+                        <p class="text-red-600 font-bold my-2">Möchten Sie importieren? Alle aktuellen Daten werden überschrieben.</p>
+                        <button id="confirm-import-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Ja, importieren</button>
+                    `;
+                    document.getElementById('confirm-import-btn').addEventListener('click', () => {
+                        state.startDateOfPlan = parseDate(importedData.startDateOfPlan);
+                        state.trainingProgress = importedData.trainingProgress;
+                        state.weeklySchedules = importedData.weeklySchedules;
+                        state.trainingTypes = importedData.trainingTypes;
+                        saveState();
+                        renderAll();
+                        hideModal(DOMElements.importExportModal);
+                    });
+                } catch (error) {
+                    DOMElements.importFeedbackArea.innerHTML = `<p class="text-red-600">Fehler: ${error.message}</p>`;
+                } finally {
+                    e.target.value = null;
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        // --- Event Handlers ---
+        const handlePhaseClick = (e) => {
+            const button = e.target.closest('.phase-btn');
+            if (button) {
+                const clickedPhase = parseInt(button.dataset.phase, 10);
+                const actualCurrentWeekIndex = getActualCurrentWeekIndex();
+                const phaseOfActualWeek = state.weeklySchedules[actualCurrentWeekIndex].phase;
+
+                if (clickedPhase === phaseOfActualWeek) {
+                    state.currentWeekIndex = actualCurrentWeekIndex;
+                } else {
+                    const firstWeekOfPhase = state.weeklySchedules.findIndex(w => w.phase === clickedPhase);
+                    if (firstWeekOfPhase !== -1) {
+                        state.currentWeekIndex = firstWeekOfPhase;
+                    }
+                }
+                renderAll();
+            }
+        };
+
+        const handleWeeklyPlanClick = (e) => {
+            const card = e.target.closest('.training-card');
+            if (!card) return;
+            const { activity, date, dayIndex } = card.dataset;
+            const dayIndexNum = parseInt(dayIndex, 10);
+
+            if (state.isEditMode) {
+                if (e.target.closest('.delete-training-btn')) {
+                    e.stopPropagation();
+                    state.weeklySchedules[state.currentWeekIndex].schedule[dayIndexNum].type = 'Leer';
+                    saveState();
+                    renderAll();
+                } else {
+                    showAddTrainingModal(dayIndexNum, activity);
+                }
+            } else if (activity !== 'Leer') {
+                showExerciseModal(activity, date);
+            }
+        };
+        
+        const handleModalInteraction = (e) => {
+            const dateKey = e.target.dataset.date;
+            if (!dateKey) return;
+            
+            state.trainingProgress[dateKey] = state.trainingProgress[dateKey] || {};
+
+            if (e.target.id === 'modal-checkbox') {
+                const isChecked = e.target.checked;
+                state.trainingProgress[dateKey].completed = isChecked;
+
+                const modal = e.target.closest('.modal');
+                const commentInput = modal.querySelector('#modal-comment');
+                const commentDisplay = modal.querySelector('#modal-comment-display');
+                const weightInput = modal.querySelector('#modal-weight-input');
+                const weightDisplay = modal.querySelector('#modal-weight-display');
+
+                if (isChecked) {
+                    commentDisplay.innerHTML = parseMarkdown(commentInput.value) || 'Kein Kommentar.';
+                    if(weightInput) weightDisplay.textContent = weightInput.value ? `${weightInput.value} kg` : 'Kein Gewicht eingetragen.';
+                }
+                commentInput.classList.toggle('hidden', isChecked);
+                commentDisplay.classList.toggle('hidden', !isChecked);
+                if (weightInput) {
+                    weightInput.classList.toggle('hidden', isChecked);
+                    if (weightDisplay) weightDisplay.classList.toggle('hidden', !isChecked);
+                }
+                renderWeek();
+                renderStatistics();
+            } else if (e.target.id === 'modal-comment') {
+                state.trainingProgress[dateKey].comment = e.target.value;
+            } else if (e.target.id === 'modal-weight-input') {
+                const weightValue = e.target.value;
+                state.trainingProgress[dateKey].weight = (weightValue === '' || isNaN(parseFloat(weightValue))) ? null : parseFloat(weightValue);
+                renderWeightChart();
+            }
+             saveState();
+        };
+
+        const handleAddFormSubmit = (e) => {
+            e.preventDefault();
+            const dayIndex = parseInt(DOMElements.addTrainingForm.dataset.dayIndex, 10);
+            const newType = DOMElements.addTrainingTypeInput.value.trim();
+            if (!newType) return;
+
+            const existingCategory = state.trainingTypes[newType]?.category;
+            state.trainingTypes[newType] = {
+                icon: DOMElements.addTrainingIconInput.value.trim(),
+                shortDescription: DOMElements.addTrainingShortDescriptionInput.value.trim(),
+                description: DOMElements.addTrainingDescriptionInput.value.trim(),
+                category: existingCategory || 'Training'
+            };
+            
+            state.weeklySchedules[state.currentWeekIndex].schedule[dayIndex].type = newType;
+            
+            saveState();
+            hideModal(DOMElements.addTrainingModal);
+            renderAll();
+        };
+
+        const handleJumpToCurrentWeek = () => {
+            state.currentWeekIndex = getActualCurrentWeekIndex();
+            renderAll();
+        };
+
+        const handleAddWeek = () => {
+            const weekToCopy = state.weeklySchedules[state.currentWeekIndex];
+            const newWeek = deepClone(weekToCopy);
+            
+            state.weeklySchedules.splice(state.currentWeekIndex + 1, 0, newWeek);
+            state.currentWeekIndex++; 
+            saveState();
+            renderAll();
+        };
+
+        const handleDeleteWeek = () => {
+            if (state.weeklySchedules.length <= 1) {
+                alert("Die letzte verbleibende Woche kann nicht gelöscht werden.");
+                return;
+            }
+            
+            showConfirmModal("Möchten Sie diese Woche wirklich löschen? Alle zugehörigen Fortschrittsdaten für diese 7 Tage gehen verloren. Dies kann nicht rückgängig gemacht werden.", () => {
+                const mondayOfWeek = getMondayOfWeek(state.currentWeekIndex);
+                for (let i = 0; i < 7; i++) {
+                    const day = new Date(mondayOfWeek);
+                    day.setDate(mondayOfWeek.getDate() + i);
+                    const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+                    delete state.trainingProgress[dateKey];
+                }
+
+                state.weeklySchedules.splice(state.currentWeekIndex, 1);
+
+                if (state.currentWeekIndex >= state.weeklySchedules.length) {
+                    state.currentWeekIndex = state.weeklySchedules.length - 1;
+                }
+                
+                saveState();
+                renderAll();
+            });
+        };
+        
+        // --- Init ---
+        const init = () => {
+            loadState();
+            
+            DOMElements.phaseSelector.addEventListener('click', handlePhaseClick);
+            DOMElements.prevWeekBtn.addEventListener('click', () => { if (state.currentWeekIndex > 0) { state.currentWeekIndex--; renderAll(); } });
+            DOMElements.nextWeekBtn.addEventListener('click', () => { if (state.currentWeekIndex < state.weeklySchedules.length - 1) { state.currentWeekIndex++; renderAll(); } });
+            DOMElements.editModeToggleBtn.addEventListener('click', () => { state.isEditMode = !state.isEditMode; renderAll(); });
+            DOMElements.weeklyPlan.addEventListener('click', handleWeeklyPlanClick);
+            DOMElements.currentWeekContainer.addEventListener('click', handleJumpToCurrentWeek);
+            
+            DOMElements.importExportBtn.addEventListener('click', () => {
+                DOMElements.importFeedbackArea.innerHTML = '';
+                showModal(DOMElements.importExportModal);
+            });
+            DOMElements.importExportCloseBtn.addEventListener('click', () => hideModal(DOMElements.importExportModal));
+            DOMElements.exportDataBtn.addEventListener('click', handleExportClick);
+            DOMElements.importFileInput.addEventListener('change', handleImportChange);
+
+            DOMElements.addTrainingTypeInput.addEventListener('input', (e) => {
+                const typeInput = e.target.value.trim();
+                const matchedType = Object.keys(state.trainingTypes).find(key => key.toLowerCase() === typeInput.toLowerCase());
+                if (matchedType) {
+                    const details = state.trainingTypes[matchedType];
+                    DOMElements.addTrainingIconInput.value = details.icon || '';
+                    DOMElements.addTrainingShortDescriptionInput.value = details.shortDescription || '';
+                    DOMElements.addTrainingDescriptionInput.value = details.description || '';
+                }
+            });
+            DOMElements.addTrainingForm.addEventListener('submit', handleAddFormSubmit);
+            DOMElements.addTrainingCancelBtn.addEventListener('click', () => hideModal(DOMElements.addTrainingModal));
+            DOMElements.addTrainingCloseBtn.addEventListener('click', () => hideModal(DOMElements.addTrainingModal));
+
+            DOMElements.modalContent.addEventListener('change', handleModalInteraction);
+            DOMElements.modalContent.addEventListener('input', handleModalInteraction);
+            DOMElements.modalCloseBtn.addEventListener('click', () => hideModal(DOMElements.exerciseModal));
+            DOMElements.exerciseModal.addEventListener('click', (e) => e.target === DOMElements.exerciseModal && hideModal(DOMElements.exerciseModal));
+            
+            DOMElements.confirmModalCancelBtn.addEventListener('click', () => hideModal(DOMElements.confirmModal));
+            DOMElements.confirmModal.addEventListener('click', (e) => e.target === DOMElements.confirmModal && hideModal(DOMElements.confirmModal));
+            
+            DOMElements.addWeekBtn.addEventListener('click', handleAddWeek);
+            DOMElements.deleteWeekBtn.addEventListener('click', handleDeleteWeek);
+
+            renderAll();
+        };
+
+        init();
+    });
+    </script>
+</body>
+</html>

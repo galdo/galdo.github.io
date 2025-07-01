@@ -1,0 +1,210 @@
+:root {
+    --primary-color: #2C5282;
+    /* --- MODIFIED: Changed the main text color --- */
+    --text-color: #2c313e;
+    --link-button-color: #54749b;
+    --phase-inactive-color: #969ba0;
+    --main-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    --border-color: #b8c1d1;
+}
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #ccd2d9;
+    color: var(--text-color);
+}
+h2, h3, h4 {
+    color: var(--text-color);
+}
+/* --- ADDED: Override for dark Tailwind text colors --- */
+.text-gray-900, .text-gray-800 {
+    color: var(--text-color) !important;
+}
+.quote-font {
+    font-family: "Cookie", cursive;
+}
+.box {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--main-shadow);
+}
+
+/* Base styling for phase selection buttons */
+.phase-button {
+    transition: all 0.3s ease;
+    background-color: var(--phase-inactive-color);
+    color: white;
+    text-align: center;
+    white-space: nowrap; /* Prevents text from wrapping */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+}
+
+.phase-button.active {
+    background-color: var(--link-button-color);
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling for other buttons */
+#prev-week-btn, #next-week-btn, #add-training-submit-btn, #export-data-btn {
+    background-color: var(--link-button-color);
+    color: white;
+}
+#prev-week-btn:hover, #next-week-btn:hover, #add-training-submit-btn:hover, #export-data-btn:hover {
+    background-color: #466080;
+}
+.modal {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 225px;
+    height: auto;
+    margin: 0 auto;
+}
+.gradient-bg {
+     background: white;
+}
+.modal-content-area input[type="checkbox"] {
+    margin-right: 0.5rem;
+    transform: scale(1.2);
+}
+.modal-content-area textarea, .modal-content-area input[type="number"] {
+    width: 100%;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    border: 1px solid #CBD5E0;
+    resize: vertical;
+    font-size: 0.875rem;
+}
+#modal-comment {
+     min-height: 160px;
+}
+.modal-content-area textarea:focus, .modal-content-area input[type="number"]:focus {
+    outline: none;
+    border-color: var(--link-button-color);
+    box-shadow: 0 0 0 2px rgba(84, 116, 155, 0.25);
+}
+.modal-comment-display {
+    background-color: #F3F4F6;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #4B5563;
+    min-height: 160px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+#edit-mode-toggle-btn, #import-export-btn {
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    border-radius: 9999px;
+    transition: all 0.3s ease;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#edit-mode-toggle-btn.view-mode, #import-export-btn {
+    color: var(--link-button-color);
+    background-color: transparent;
+    box-shadow: none;
+}
+#edit-mode-toggle-btn.view-mode:hover, #import-export-btn:hover {
+    background-color: #E2E8F0;
+}
+#edit-mode-toggle-btn.edit-mode {
+    color: var(--link-button-color);
+    background-color: #E2E8F0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+#edit-mode-toggle-btn.edit-mode:hover {
+    background-color: #CBD5E0;
+}
+.delete-training-btn {
+    background-color: transparent;
+    color: #4e6e97;
+    transition: color 0.3s ease;
+}
+.delete-training-btn:hover {
+    color: #2C5282;
+}
+.training-card {
+    border: 1px solid var(--border-color);
+    box-shadow: var(--main-shadow);
+    min-height: 140px;
+}
+.training-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+.hidden {
+    display: none;
+}
+input[type="file"] {
+    display: none;
+}
+.custom-file-upload {
+    border: 1px solid var(--link-button-color);
+    color: var(--link-button-color);
+    display: inline-block;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    font-weight: 600;
+}
+.custom-file-upload:hover {
+    background-color: #f0f4f8;
+}
+.prose ul, .prose ol {
+    padding-left: 1.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.prose ul {
+    list-style-type: disc;
+}
+.prose ol {
+    list-style-type: decimal;
+}
+.prose li {
+    margin-bottom: 0.25rem;
+}
+.prose p {
+    margin-bottom: 0.5rem;
+}
+.prose p:last-child {
+    margin-bottom: 0;
+}
+#modal-weight-display {
+    min-height: auto;
+}
+#current-week-display:hover {
+    color: #54749b;
+}
+
+/* === ADDED: Style for new week edit buttons === */
+.edit-mode-icon-btn {
+    color: var(--link-button-color);
+    background-color: #E2E8F0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    border-radius: 9999px;
+    transition: all 0.3s ease;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.edit-mode-icon-btn:hover {
+    background-color: #CBD5E0;
+}
