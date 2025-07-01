@@ -24,7 +24,6 @@
         <main class="mt-0">
             <div id="phase-selector-container" class="mb-8 box rounded-xl grid grid-cols-1 lg:grid-cols-3 lg:gap-8 items-center p-4">
                 <div class="lg:col-span-1 mb-4 lg:mb-0">
-                    <!-- === MODIFIED: Headline style updated === -->
                     <h2 class="text-3xl whitespace-nowrap font-bold" style="color: #45658e; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Interaktiver Trainingsplan</h2>
                 </div>
                 <div class="lg:col-span-2 flex items-center gap-4">
@@ -57,19 +56,9 @@
                         </div>
                         <div>
                             <h3 class="text-2xl font-bold mb-3 text-gray-900">Wichtige Tipps</h3>
-                            <div class="space-y-4">
-                                <div class="p-4 rounded-xl box">
-                                    <h4 class="font-bold text-lg mb-2">🧠 Mentale Stärke</h4>
-                                    <p class="text-gray-600 text-sm">Tennis ist Kopfsache. Bleib geduldig, analysiere Fehler konstruktiv und lass dich von Rückschlägen nicht entmutigen.</p>
-                                </div>
-                                <div class="p-4 rounded-xl box">
-                                    <h4 class="font-bold text-lg mb-2">🏃‍♂️ Konstanz schlägt Intensität</h4>
-                                    <p class="text-gray-600 text-sm">Regelmäßiges, geplantes Training ist effektiver als unregelmäßige, überintensive Einheiten. Höre auf deinen Körper, um Verletzungen zu vermeiden.</p>
-                                </div>
-                                 <div class="p-4 rounded-xl box">
-                                    <h4 class="font-bold text-lg mb-2">🤝 Trainingspartner</h4>
-                                    <p class="text-gray-600 text-sm">Suche dir nach den ersten Monaten Spielpartner. Regelmäßige Matches sind der beste Weg, um das Gelernte anzuwenden und Matchpraxis zu sammeln.</p>
-                                </div>
+                            <!-- === MODIFIED: Container for dynamic tips === -->
+                            <div id="tips-container" class="space-y-4">
+                                <!-- Tips will be dynamically inserted here -->
                             </div>
                         </div>
                     </div>
@@ -218,7 +207,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         Chart.register(ChartDataLabels);
         
-        const HTML_VERSION = "1.1";
+        const HTML_VERSION = "1.2"; // Version updated
         const DATA_MODEL_VERSION = 3;
 
         // --- State Management ---
@@ -237,6 +226,26 @@
         let weeklyFocusChart;
         let weightCurveChart;
 
+        // === ADDED: List of all tips ===
+        const allTips = [
+            { icon: '🧠', title: 'Mentale Stärke', text: 'Tennis ist Kopfsache. Bleib geduldig, analysiere Fehler konstruktiv und lass dich von Rückschlägen nicht entmutigen.' },
+            { icon: '🏃‍♂️', title: 'Konstanz schlägt Intensität', text: 'Regelmäßiges, geplantes Training ist effektiver als unregelmäßige, überintensive Einheiten. Höre auf deinen Körper, um Verletzungen zu vermeiden.' },
+            { icon: '🤝', title: 'Trainingspartner', text: 'Suche dir nach den ersten Monaten Spielpartner. Regelmäßige Matches sind der beste Weg, um das Gelernte anzuwenden und Matchpraxis zu sammeln.' },
+            { icon: '🏸', title: 'Frühe Vorbereitung', text: 'Nehmen Sie den Schläger frühzeitig zurück, sobald Sie die Flugbahn des gegnerischen Balls erkennen. Dies gibt Ihnen mehr Zeit für einen sauberen Schlag.' },
+            { icon: '👟', title: 'Stabile Beinarbeit', text: 'Achten Sie auf eine ausbalancierte Position mit leicht gebeugten Knien. Eine aktive Beinarbeit ist entscheidend, um optimal zum Ball zu stehen.' },
+            { icon: '🎯', title: 'Treffpunkt vor dem Körper', text: 'Versuchen Sie, den Ball konstant vor dem Körper zu treffen, um eine maximale Hebelwirkung und Kontrolle zu erzielen und mehr Tempo zu erzeugen.' },
+            { icon: '💪', title: 'Lockerer Griff & Schwung', text: 'Halten Sie den Schläger nicht zu verkrampft. Die Kraft kommt aus der Rotation des Oberkörpers und der Hüfte, nicht allein aus dem Arm.' },
+            { icon: '🤯', title: 'Fehler provozieren', text: 'Konzentrieren Sie sich darauf, den Ball sicher und platziert ins Feld zu spielen, anstatt immer auf direkte Gewinnschläge zu gehen.' },
+            { icon: '↘️', title: 'Cross-Court als Standard', text: 'Der Cross-Schlag ist meist die sicherste Variante. Das Netz ist in der Mitte niedriger und das diagonale Feld ist länger, was die Fehlertoleranz erhöht.' },
+            { icon: '✅', title: 'Sicherer zweiter Aufschlag', text: 'Ein variabler und sicher gespielter zweiter Aufschlag ist wichtiger als ein riskanter, harter Aufschlag. Vermeiden Sie Doppelfehler.' },
+            { icon: '🕵️', title: 'Gegner analysieren', text: 'Beobachten Sie die Stärken und Schwächen Ihres Gegners bereits beim Einspielen, um Ihre Taktik entsprechend anzupassen.' },
+            { icon: '🧘', title: 'Fokus auf den Punkt', text: 'Lassen Sie sich nicht von vergangenen Fehlern oder dem Spielstand ablenken. Konzentrieren Sie sich ausschließlich auf den bevorstehenden Ballwechsel.' },
+            { icon: '😎', title: 'Positive Körpersprache', text: 'Behalten Sie auch in schwierigen Phasen eine aufrechte und positive Haltung bei. Eine selbstbewusste Ausstrahlung kann Ihre Leistung verbessern.' },
+            { icon: '🎮', title: 'Spielsimulation im Training', text: 'Gestalten Sie die Übungen so realistisch wie möglich, um den Transfer vom Training ins Match zu erleichtern. Üben Sie typische Spielzüge.' },
+            { icon: '✨', title: 'Qualität vor Quantität', text: 'Es ist besser, eine begrenzte Anzahl von Bällen mit voller Konzentration und korrekter Technik zu schlagen, als viele Bälle unkonzentriert zu spielen.' },
+            { icon: '🏋️‍♀️', title: 'Athletiktraining', text: 'Integrieren Sie regelmäßige Athletikeinheiten in Ihren Trainingsplan, um Ihre Kraft, Ausdauer, Schnelligkeit und Beweglichkeit zu steigern.' }
+        ];
+
         // --- DOM Elements ---
         const DOMElements = {
             phaseSelector: document.getElementById('phase-selector'),
@@ -252,6 +261,7 @@
             weekEditControls: document.getElementById('week-edit-controls'),
             addWeekBtn: document.getElementById('add-week-btn'),
             deleteWeekBtn: document.getElementById('delete-week-btn'),
+            tipsContainer: document.getElementById('tips-container'), // Added
             // Modals
             exerciseModal: document.getElementById('exercise-modal'),
             modalTitle: document.getElementById('modal-title'),
@@ -476,6 +486,26 @@
             renderUIState();
         };
         
+        // === ADDED: Function to render random tips ===
+        const renderRandomTips = () => {
+            const container = DOMElements.tipsContainer;
+            container.innerHTML = ''; // Clear existing tips
+            
+            // Shuffle array and pick 3
+            const shuffled = [...allTips].sort(() => 0.5 - Math.random());
+            const selectedTips = shuffled.slice(0, 3);
+
+            selectedTips.forEach(tip => {
+                const tipElement = document.createElement('div');
+                tipElement.className = 'p-4 rounded-xl box';
+                tipElement.innerHTML = `
+                    <h4 class="font-bold text-lg mb-2">${tip.icon} ${tip.title}</h4>
+                    <p class="text-gray-600 text-sm">${tip.text}</p>
+                `;
+                container.appendChild(tipElement);
+            });
+        };
+
         const renderPhase = () => {
             const { defaultPlanData } = initializeDefaultData();
             const currentPhase = state.weeklySchedules[state.currentWeekIndex].phase;
@@ -1071,6 +1101,7 @@
             DOMElements.deleteWeekBtn.addEventListener('click', handleDeleteWeek);
 
             renderAll();
+            renderRandomTips(); // Call the function to display tips on initial load
         };
 
         init();
