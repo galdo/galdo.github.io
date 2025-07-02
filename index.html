@@ -40,14 +40,13 @@
             </div>
 
             <div id="content-area" class="gradient-bg p-6 rounded-2xl relative box">
-                <!-- === MODIFIED: Changed from grid to flex for large screens for robust alignment === -->
                 <div class="flex flex-col lg:flex-row gap-8">
                     
-                    <!-- Left Column -->
                     <div class="lg:w-1/3 flex flex-col justify-between">
                         <div>
                             <h3 class="text-2xl font-bold mb-3 text-gray-900">Ziele dieser Phase</h3>
-                            <ul id="phase-goals" class="list-disc list-outside space-y-2 text-gray-700 ml-5"></ul>
+                            <!-- === MODIFIED: Added text-sm to reduce font size === -->
+                            <ul id="phase-goals" class="list-disc list-outside space-y-2 text-gray-700 ml-5 text-sm"></ul>
                         </div>
                         <div class="bg-white/60 p-4 rounded-xl my-8">
                             <h3 class="text-lg font-bold mb-3 text-center text-gray-900">Wöchentlicher Fokus</h3>
@@ -64,9 +63,7 @@
                         </div>
                     </div>
 
-                    <!-- Right Column -->
                     <div id="right-content-column" class="lg:w-2/3 flex flex-col">
-                        <!-- Top part of right column -->
                         <div>
                             <div class="flex justify-between items-center mb-4">
                                 <button id="prev-week-btn" class="py-1.5 px-3.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">←</button>
@@ -101,7 +98,6 @@
                             </div>
                         </div>
 
-                        <!-- Bottom part of right column -->
                         <div class="mt-8 p-6 rounded-2xl box flex-grow flex flex-col">
                             <h2 class="text-2xl font-bold text-center mb-6 text-gray-900">Deine Gewichtsentwicklung</h2>
                             <div class="flex-grow" style="position: relative; min-height: 250px;">
@@ -232,7 +228,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         Chart.register(ChartDataLabels);
         
-        const HTML_VERSION = "1.8.1"; // Version updated for layout alignment fix
+        const HTML_VERSION = "1.8.2"; // Version updated for goal analysis
         const DATA_MODEL_VERSION = 3;
 
         // --- State Management ---
@@ -367,11 +363,12 @@
         };
 
         const initializeDefaultData = () => {
+            // === MODIFIED: Updated goals for each phase ===
             const defaultPlanData = {
-                1: { goals: ["Sicheres Beherrschen von Vorhand und Rückhand (Technik, Treffpunkt, Bewegung).", "Erste Ansätze für Aufschlag und Volley entwickeln.", "Aufbau der grundlegenden Beweglichkeit und Ausdauer."], schedule: [{ day: 'Montag', type: 'Ballwand' }, { day: 'Dienstag', type: 'Regeneration' }, { day: 'Mittwoch', type: 'Pause' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Ballwand' }, { day: 'Sonntag', type: 'Regeneration' }] },
-                2: { goals: ["Verbesserung der tennisspezifischen Ausdauer.", "Konstantere Schläge unter leichter Bewegung.", "Erste sichere Ansätze beim Volley."], schedule: [{ day: 'Montag', type: 'Ballwand' }, { day: 'Dienstag', type: 'Ausdauer' }, { day: 'Mittwoch', type: 'Pause' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Regeneration' }, { day: 'Samstag', type: 'Ballwand' }, { day: 'Sonntag', type: 'Pause' }] },
-                3: { goals: ["Aufbau tennisspezifischer Kraft und Explosivität.", "Verbesserung des Aufschlags (Platzierung & Power).", "Einführung einfacher Spielstrategien im Training."], schedule: [{ day: 'Montag', type: 'Krafttraining' }, { day: 'Dienstag', type: 'Ballwand' }, { day: 'Mittwoch', type: 'Ausdauer' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Regeneration' }, { day: 'Sonntag', 'type': 'Pause' }] },
-                4: { goals: ["Anwendung aller Schläge und Taktiken im Match.", "Verbesserung der mentalen Stärke unter Matchbedingungen.", "Sichere Aufschlag- und Return-Games.", "Bereitschaft für Fun-Turniere."], schedule: [{ day: 'Montag', type: 'Trainingsspiel' }, { day: 'Dienstag', type: 'Explosivität' }, { day: 'Mittwoch', type: 'Ballwand' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Regeneration' }, { day: 'Sonntag', 'type': 'Pause' }] }
+                1: { goals: ["Sichere Grundschläge durch viele Wiederholungen (Ballwand) festigen.", "Erste technische Korrekturen im Coaching umsetzen.", "Körper an regelmäßige Belastung und Erholung gewöhnen."], schedule: [{ day: 'Montag', type: 'Ballwand' }, { day: 'Dienstag', type: 'Regeneration' }, { day: 'Mittwoch', type: 'Pause' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Ballwand' }, { day: 'Sonntag', type: 'Regeneration' }] },
+                2: { goals: ["Schlagkonstanz unter leichter Belastung (Ausdauer) verbessern.", "Grundlagen der tennisspezifischen Fitness aufbauen.", "Saubere Technik auch bei beginnender Ermüdung beibehalten."], schedule: [{ day: 'Montag', type: 'Ballwand' }, { day: 'Dienstag', type: 'Ausdauer' }, { day: 'Mittwoch', type: 'Pause' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Regeneration' }, { day: 'Samstag', type: 'Ballwand' }, { day: 'Sonntag', type: 'Pause' }] },
+                3: { goals: ["Aufbau von Kraft für druckvollere Schläge.", "Kombination von verschiedenen Trainingsreizen (Kraft, Ausdauer, Technik).", "Erste taktische Elemente im Coaching erlernen."], schedule: [{ day: 'Montag', type: 'Krafttraining' }, { day: 'Dienstag', type: 'Ballwand' }, { day: 'Mittwoch', type: 'Ausdauer' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Regeneration' }, { day: 'Sonntag', 'type': 'Pause' }] },
+                4: { goals: ["Gelernte Techniken im Trainingsspiel anwenden.", "Verbesserung der Antrittsschnelligkeit und Reaktionsfähigkeit.", "Mentale Vorbereitung auf Wettkampfsituationen."], schedule: [{ day: 'Montag', type: 'Trainingsspiel' }, { day: 'Dienstag', type: 'Explosivität' }, { day: 'Mittwoch', type: 'Ballwand' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Regeneration' }, { day: 'Sonntag', 'type': 'Pause' }] }
             };
 
             const defaultTrainingTypes = {
