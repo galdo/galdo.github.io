@@ -1,132 +1,47 @@
-# 📋 Interaktiver Trainingsplan – Dokumentation
+# Interaktiver Trainingsplaner
 
----
+Ein flexibles Framework zur Erstellung, Verwaltung und Analyse von Trainingsplänen für Sportler, Trainer und ambitionierte Amateure. Dieses Tool wurde entwickelt, um eine dynamische und visuell ansprechende Alternative zu statischen Tabellen zu bieten, die sofortiges Feedback zur Trainingsstruktur gibt.
 
-## 1. 📘 Anwenderdokumentation
+## Übersicht
 
-### 🏁 Übersicht
+Der interaktive Trainingsplaner ist eine reine Frontend-Anwendung, die es Benutzern ermöglicht, detaillierte wöchentliche Trainingspläne zu erstellen, den Fortschritt zu verfolgen und die Belastung zu analysieren. Die Anwendung ist auf Geschwindigkeit und Datenschutz ausgelegt: Der gesamte Zustand wird lokal im Browser gespeichert, was eine schnelle und private Nutzung ohne Serveranbindung oder Benutzerkonto ermöglicht. Dies gibt dem Nutzer die volle Kontrolle über seine sensiblen Trainingsdaten.
 
-Der **Interaktive Trainingsplan** hilft dir, dein Tennis-Training strukturiert aufzubauen, Wochenziele zu verfolgen und deinen Fortschritt (inkl. Gewicht) visuell darzustellen. Die Anwendung läuft im Browser und speichert deine Daten lokal – kein Login nötig.
+## Kernfunktionen
 
----
+* **Dynamische Wochenplanung:** Erstellen und bearbeiten Sie Wochenpläne intuitiv, indem Sie Trainingseinheiten über ein Menü zuweisen. Pläne sind nicht in Stein gemeißelt – passen Sie die Woche jederzeit an, um auf unvorhergesehene Ereignisse oder das eigene Körpergefühl zu reagieren.
 
-### 🗂️ Phasenauswahl
+* **Phasenbasierte Periodisierung:** Strukturieren Sie Ihr Training in bis zu vier Phasen (z.B. Grundlagen, Aufbau, Wettkampf, Tapering) mit jeweils eigenen, anpassbaren Zielen. Diese Funktion unterstützt das sportwissenschaftliche Prinzip der Periodisierung, indem sie hilft, die Belastung über einen Makrozyklus gezielt zu steuern und Leistungsspitzen zum richtigen Zeitpunkt zu erreichen.
 
-- Oben links findest du vier farbige Buttons für die Trainingsphasen:
-  - 🟦 **1. Grundlagen**
-  - 🟨 **2. Präzision**
-  - 🟧 **3. Matchpraxis**
-  - 🟥 **4. Turnierfokus**
-- Klick auf eine Phase bringt dich direkt zur ersten Woche dieser Phase.
+* **Intensitäts-Management:**
+    * **Visueller Index:** Ein Kuchendiagramm zeigt auf einen Blick die prozentuale Verteilung der Trainingskategorien (Training, Regeneration, Match, Pause). So lässt sich die Balance der Woche sofort erfassen.
+    * **Belastungs-Score:** Ein zentraler Index (0-99) quantifiziert die wöchentliche Intensität. Dieses einfache, aber mächtige Werkzeug hilft, das Risiko von Übertraining zu minimieren und eine progressive Steigerung der Belastung sicherzustellen.
+    * **Anpassbare Kategorien:** Definieren Sie eigene Trainingsarten (z.B. "Yoga", "Sprint-Training", "Technik-Drills") und weisen Sie diesen eine Intensitäts-Kategorie zu (Keine, Niedrig, Mittel, Hoch). Diese Flexibilität macht das Tool für praktisch jede Sportart und Trainingsphilosophie anwendbar.
 
-![Phasen-Buttons](screenshots/phasenauswahl.png)
+* **Fortschritts-Tracking:**
+    * Markieren Sie Einheiten als "erledigt" oder "verpasst", um eine ehrliche Bilanz der Trainingsdisziplin zu ziehen.
+    * Fügen Sie detaillierte Kommentare und Notizen zu jeder Trainingseinheit hinzu, um subjektives Empfinden, besondere Vorkommnisse oder Leistungsdaten festzuhalten.
+    * Verfolgen Sie Ihre Gewichtsentwicklung in einem separaten Diagramm, um die Auswirkungen des Trainings auf den Körper zu beobachten.
 
----
+* **Datenhoheit und Portabilität:**
+    * **Lokal & Privat:** Ihre Daten gehören Ihnen. Alle Informationen werden ausschließlich im Local Storage Ihres Browsers gespeichert und niemals an einen Server gesendet.
+    * **Import & Export:** Sichern Sie Ihren kompletten Trainingsplan inklusive aller personalisierten Einstellungen und Fortschritte als JSON-Datei. Teilen Sie diese Datei mit Trainern, Teamkollegen oder nutzen Sie sie als Backup.
 
-### 📆 Wochen-Navigation
+## Für wen ist dieses Framework?
 
-- Mit ← und → navigierst du zwischen den Wochen.
-- Die aktuelle Woche wird oben angezeigt, z. B. „Woche 3 / 44“.
-- ✏️ **Bearbeitungsmodus aktivieren** zum Ändern der Inhalte.
+* **Sportler (Amateure & Profis):** Zur eigenständigen, detaillierten Planung, Visualisierung und Analyse des eigenen Trainings. Ideal, um die eigene Entwicklung nachzuvollziehen und die Trainingssteuerung zu verbessern.
+* **Trainer & Coaches:** Als Werkzeug, um standardisierte oder individuelle Trainingspläne für Athleten zu erstellen und diese einfach per JSON-Datei zu teilen. Athleten können den Plan importieren, ihren Fortschritt tracken und den kommentierten Plan zur Analyse an den Trainer zurücksenden.
+* **Entwickler:** Als anpassbare und erweiterbare Codebasis für spezialisierte Trainings-Web-Apps in verschiedenen Sportarten. Der Code ist bewusst einfach gehalten (Vanilla JS), um einen leichten Einstieg zu ermöglichen.
 
-![Wochen-Navigation](screenshots/wochen-navigation.png)
+## Technologie
 
----
+* **HTML5**
+* **CSS3** (mit **Tailwind CSS** für schnelles und responsives Styling)
+* **Vanilla JavaScript (ES6+)** (keine Framework-Abhängigkeiten für maximale Portabilität)
+* **Chart.js** für die visuelle und ansprechende Darstellung von Daten
 
-### 🧱 Trainingsplan pro Woche
+## Wie man startet
 
-- Jeder Tag der Woche (Mo–So) hat eine eigene Karte mit:
-  - 📅 Datum
-  - 🏋️ Trainingstyp (mit Emoji)
-  - 📝 Kurzbeschreibung
-- Klick auf eine Karte zeigt Details:
-  - ✅ Checkbox „Erledigt“
-  - 💬 Kommentar
-  - ⚖️ Gewichtseingabe (nur Sonntag)
+Die Anwendung startet bewusst mit einem leeren Plan, um Ihnen volle Flexibilität zu geben. Sie haben zwei Möglichkeiten:
 
----
-
-### ✍️ Bearbeiten des Trainingsplans
-
-- Aktiviere den Bearbeitungsmodus ✏️
-- Klick auf eine Karte öffnet ein Formular:
-  - 📌 Wochentag
-  - 🏷️ Trainingsart
-  - 😀 Icon (Emoji)
-  - 📝 Kurzbeschreibung
-  - 📖 Langbeschreibung (Markdown möglich)
-- 🗑️ Einheiten löschen über Papierkorb-Symbol
-- Änderungen werden sofort gespeichert (LocalStorage).
-
----
-
-### 📊 Fortschritt & Gewicht
-
-- Tabelle zeigt: ✅ durchgeführt / ❌ verpasst / ⏳ offen
-- Gewichtsentwicklung (⚖️) wird als Liniendiagramm visualisiert (Chart.js)
-- Diagramme passen sich dynamisch an deine Eingaben an
-
-![Fortschrittsübersicht](screenshots/fortschritt.png)
-
----
-
-### 💾 Datenimport & Backup
-
-- Über 🔁 Symbol erreichst du:
-  - 📤 Export deines aktuellen Plans (JSON-Datei)
-  - 📥 Import einer Sicherung (ersetzt vorhandene Daten)
-- Sicherungsdateien werden lokal gespeichert
-
----
-
-## 2. ⚙️ Technische Dokumentation
-
----
-
-### 🧩 Funktionsübersicht
-
-| Funktion | Beschreibung | Icon |
-|----------|--------------|------|
-| `init()` | Startet die Anwendung und lädt Daten aus dem Speicher | <i class="fa-solid fa-play"></i> |
-| `loadState()` / `saveState()` | Verwaltet das Speichern und Laden im `localStorage` | <i class="fa-solid fa-database"></i> |
-| `renderAll()` | Render-Prozess für Wochenanzeige, Charts, Statistik | <i class="fa-solid fa-arrows-rotate"></i> |
-| `renderPhase()` | Zeigt aktuelle Phase visuell an | <i class="fa-solid fa-layer-group"></i> |
-| `renderWeek()` | Generiert die Tageskarten der Woche | <i class="fa-solid fa-calendar-week"></i> |
-| `renderStatistics()` | Aktualisiert Fortschrittstabelle | <i class="fa-solid fa-table"></i> |
-| `renderChart()` / `renderWeightChart()` | Erstellt die Diagramme mit Chart.js | <i class="fa-solid fa-chart-pie"></i>, <i class="fa-solid fa-chart-line"></i> |
-| `handlePhaseClick()` etc. | Diverse Event-Handler für UI-Aktionen | <i class="fa-solid fa-hand-pointer"></i> |
-| `showModal() / hideModal()` | Öffnen und Schließen von Dialogfenstern | <i class="fa-solid fa-window-maximize"></i> |
-
----
-
-### 🧱 Datenmodell (Textbeschreibung)
-
-Das Datenmodell basiert auf einer lokalen JSON-Struktur und besteht aus folgenden Komponenten:
-
-- **Version**: Datenmodell-Version zur Migration (aktuell v3)
-- **Startdatum**: Zeitpunkt, ab dem der Trainingsplan beginnt
-- **Trainingseinträge**: Für jeden Tag können Trainingseinheiten mit Status (erledigt, Kommentar, Gewicht) hinterlegt werden
-- **Wochenspezifische Trainingspläne**: Jede Woche enthält eine Liste von 7 Tagesplänen, jeweils mit Trainingsart und Beschreibung
-- **Trainingsarten**: Ein Set von Trainingsarten (z. B. Kraft, Ausdauer), jede mit Icon, Kurz- und Langbeschreibung
-
----
-
-### 🧩 UI-Elemente – Tabelle
-
-| UI-Element                 | Selektor/ID                  | Funktion                             | Icon |
-|---------------------------|------------------------------|--------------------------------------|------|
-| Hauptcontainer            | `#app`                       | Enthält die komplette App            |      |
-| Phasenauswahl             | `#phase-selector`            | Umschalten der Trainingsphasen       | <i class="fa-solid fa-layer-group"></i> |
-| Wochenanzeige             | `#current-week-display`      | Zeigt aktuelle Woche/Daten an        | <i class="fa-solid fa-calendar-week"></i> |
-| Navigation                | `#prev-week-btn`, `#next-week-btn` | Blättert durch Wochen            | ← / → |
-| Trainingskarten           | `.training-card`             | Darstellung der Wochentage           |      |
-| Bearbeiten-Button         | `#edit-mode-toggle-btn`      | Wechsel in Editiermodus              | ✏️ / ✔️ |
-| Fortschrittstabelle       | `#stats-table-body`          | Übersicht Trainingsstatus            | <i class="fa-solid fa-table"></i> |
-| Gewichtskurve             | `#weight-curve-chart`        | Line-Chart mit Gewichtsdaten         | <i class="fa-solid fa-chart-line"></i> |
-| Import/Export             | `#import-export-btn`         | Öffnet Modal für Backup/Import       | <i class="fa-solid fa-rotate"></i> |
-
----
-
-### 🧭 UI-Elementstruktur – Hierarchie
-
-<body> └── div#app.container └── main ├── div#phase-selector-container │ └── div#phase-selector │ ├── button[data-phase="1"] │ ├── button[data-phase="2"] │ └── … └── div#content-area └── div.grid ├── div.left-column │ ├── ul#phase-goals │ ├── canvas#weeklyFocusChart │ └── … └── div#right-content-column ├── div.week-navigation │ ├── button#prev-week-btn │ ├── h3#current-week-display-wrapper │ └── button#next-week-btn ├── div#weekly-plan │ └── div.training-card ×7 ├── table.stats-table │ └── tbody#stats-table-body └── canvas#weight-curve-chart ```
+1.  **Manueller Aufbau:** Nutzen Sie den "Bearbeiten"-Modus, um Wochen hinzuzufügen und Ihre ersten Trainingseinheiten zu erstellen. Ideal für einen komplett individuellen Start.
+2.  **Import:** Laden Sie eine bestehende `import.json`-Datei (wie die bereitgestellte Vorlage), um einen vollständigen Plan als Ausgangspunkt zu nutzen. Dies ist perfekt für Trainer, die einen Basisplan an ihre Athleten verteilen möchten.
