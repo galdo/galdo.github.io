@@ -98,33 +98,49 @@ h2, h3, h4 {
     overflow-y: auto;
     white-space: pre-wrap;
 }
-#edit-mode-toggle-btn, #import-export-btn {
-    font-size: 1.2rem;
+
+/* === MODIFIED: Unified styles for icon buttons === */
+#edit-mode-toggle-btn,
+.edit-mode-icon-btn {
+    color: var(--link-button-color);
+    background-color: #E2E8F0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-size: 0.9rem;
     padding: 0.5rem;
     border-radius: 9999px;
     transition: all 0.3s ease;
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-#edit-mode-toggle-btn.view-mode, #import-export-btn {
+
+#edit-mode-toggle-btn:hover,
+.edit-mode-icon-btn:hover {
+    background-color: #CBD5E0;
+}
+
+/* Style for the separate import/export button */
+#import-export-btn {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    border-radius: 9999px;
+    transition: all 0.3s ease;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--link-button-color);
     background-color: transparent;
     box-shadow: none;
 }
-#edit-mode-toggle-btn.view-mode:hover, #import-export-btn:hover {
+
+#import-export-btn:hover {
     background-color: #E2E8F0;
 }
-#edit-mode-toggle-btn.edit-mode {
-    color: var(--link-button-color);
-    background-color: #E2E8F0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-#edit-mode-toggle-btn.edit-mode:hover {
-    background-color: #CBD5E0;
-}
+
 .delete-training-btn {
     background-color: transparent;
     color: #4e6e97;
@@ -186,24 +202,6 @@ input[type="file"] {
     color: #54749b;
 }
 
-.edit-mode-icon-btn {
-    color: var(--link-button-color);
-    background-color: #E2E8F0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    font-size: 0.9rem;
-    padding: 0.5rem;
-    border-radius: 9999px;
-    transition: all 0.3s ease;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.edit-mode-icon-btn:hover {
-    background-color: #CBD5E0;
-}
-
 .intensity-index {
     position: absolute;
     top: 50%;
@@ -215,7 +213,6 @@ input[type="file"] {
     pointer-events: none; 
 }
 
-/* === ADDED: Styles for category editor table === */
 .category-editor-table {
     border-collapse: collapse;
 }

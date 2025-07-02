@@ -45,8 +45,8 @@
                     <div class="lg:w-1/3 flex flex-col justify-between">
                         <div>
                             <h3 class="text-2xl font-bold mb-3 text-gray-900">Ziele dieser Phase</h3>
-                            <!-- === MODIFIED: Added text-sm to reduce font size === -->
-                            <ul id="phase-goals" class="list-disc list-outside space-y-2 text-gray-700 ml-5 text-sm"></ul>
+                            <div id="phase-goals" class="prose text-sm"></div>
+                            <textarea id="phase-goals-editor" class="hidden w-full text-sm p-2 border rounded-md bg-gray-50"></textarea>
                         </div>
                         <div class="bg-white/60 p-4 rounded-xl my-8">
                             <h3 class="text-lg font-bold mb-3 text-center text-gray-900">Wöchentlicher Fokus</h3>
@@ -76,8 +76,10 @@
                                 </div>
                                 <button id="next-week-btn" class="py-1.5 px-3.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">→</button>
                             </div>
-                            <div id="weekly-plan" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
-                                <button id="edit-mode-toggle-btn" class="absolute bottom-4 right-0" aria-label="Plan bearbeiten"></button>
+                            <div class="relative">
+                                <div id="weekly-plan" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                </div>
+                                <button id="edit-mode-toggle-btn" class="absolute bottom-4 right-4" aria-label="Plan bearbeiten"></button>
                             </div>
                             
                             <div class="mt-8 p-6 rounded-2xl box">
@@ -112,7 +114,6 @@
         </main>
     </div>
 
-    <!-- Modals -->
     <div id="exercise-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
             <div class="p-6 md:p-8">
@@ -228,8 +229,8 @@
     document.addEventListener('DOMContentLoaded', () => {
         Chart.register(ChartDataLabels);
         
-        const HTML_VERSION = "1.8.2"; // Version updated for goal analysis
-        const DATA_MODEL_VERSION = 3;
+        const HTML_VERSION = "1.9.3"; // Version updated for empty start
+        const DATA_MODEL_VERSION = 4;
 
         // --- State Management ---
         let state = {
@@ -239,7 +240,12 @@
             trainingProgress: {},
             trainingTypes: {}, 
             weeklySchedules: [], 
-            planData: {} 
+            phaseData: {} 
+        };
+
+        let categorySortState = {
+            key: 'name', 
+            order: 'asc' 
         };
 
         // --- Constants ---
@@ -270,6 +276,7 @@
         const DOMElements = {
             phaseSelector: document.getElementById('phase-selector'),
             phaseGoals: document.getElementById('phase-goals'),
+            phaseGoalsEditor: document.getElementById('phase-goals-editor'),
             weeklyPlan: document.getElementById('weekly-plan'),
             currentWeekDisplay: document.getElementById('current-week-display'),
             currentWeekContainer: document.getElementById('current-week-display-wrapper'),
@@ -363,12 +370,11 @@
         };
 
         const initializeDefaultData = () => {
-            // === MODIFIED: Updated goals for each phase ===
-            const defaultPlanData = {
-                1: { goals: ["Sichere Grundschläge durch viele Wiederholungen (Ballwand) festigen.", "Erste technische Korrekturen im Coaching umsetzen.", "Körper an regelmäßige Belastung und Erholung gewöhnen."], schedule: [{ day: 'Montag', type: 'Ballwand' }, { day: 'Dienstag', type: 'Regeneration' }, { day: 'Mittwoch', type: 'Pause' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Ballwand' }, { day: 'Sonntag', type: 'Regeneration' }] },
-                2: { goals: ["Schlagkonstanz unter leichter Belastung (Ausdauer) verbessern.", "Grundlagen der tennisspezifischen Fitness aufbauen.", "Saubere Technik auch bei beginnender Ermüdung beibehalten."], schedule: [{ day: 'Montag', type: 'Ballwand' }, { day: 'Dienstag', type: 'Ausdauer' }, { day: 'Mittwoch', type: 'Pause' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Regeneration' }, { day: 'Samstag', type: 'Ballwand' }, { day: 'Sonntag', type: 'Pause' }] },
-                3: { goals: ["Aufbau von Kraft für druckvollere Schläge.", "Kombination von verschiedenen Trainingsreizen (Kraft, Ausdauer, Technik).", "Erste taktische Elemente im Coaching erlernen."], schedule: [{ day: 'Montag', type: 'Krafttraining' }, { day: 'Dienstag', type: 'Ballwand' }, { day: 'Mittwoch', type: 'Ausdauer' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Regeneration' }, { day: 'Sonntag', 'type': 'Pause' }] },
-                4: { goals: ["Gelernte Techniken im Trainingsspiel anwenden.", "Verbesserung der Antrittsschnelligkeit und Reaktionsfähigkeit.", "Mentale Vorbereitung auf Wettkampfsituationen."], schedule: [{ day: 'Montag', type: 'Trainingsspiel' }, { day: 'Dienstag', type: 'Explosivität' }, { day: 'Mittwoch', type: 'Ballwand' }, { day: 'Donnerstag', type: 'Coaching' }, { day: 'Freitag', type: 'Pause' }, { day: 'Samstag', type: 'Regeneration' }, { day: 'Sonntag', 'type': 'Pause' }] }
+            const defaultPhaseData = {
+                1: { goals: "* Ziele für Phase 1 definieren..." },
+                2: { goals: "* Ziele für Phase 2 definieren..." },
+                3: { goals: "* Ziele für Phase 3 definieren..." },
+                4: { goals: "* Ziele für Phase 4 definieren..." }
             };
 
             const defaultTrainingTypes = {
@@ -384,45 +390,28 @@
                 Leer: { icon: '', shortDescription: '', description: '', category: 'Leer' }
             };
             
-            return { defaultPlanData, defaultTrainingTypes };
+            return { defaultPhaseData, defaultTrainingTypes };
         };
         
         const migrateDataModel = (data) => {
             if (!data.version || data.version < DATA_MODEL_VERSION) {
                 console.log(`Altes Datenmodell (v${data.version || 1}) erkannt. Führe Migration zu v${DATA_MODEL_VERSION} durch...`);
                 
-                const { defaultPlanData, defaultTrainingTypes } = initializeDefaultData();
+                const { defaultPhaseData, defaultTrainingTypes } = initializeDefaultData();
                 const migratedData = {
                     version: DATA_MODEL_VERSION,
                     startDateOfPlan: data.startDateOfPlan,
                     trainingProgress: data.trainingProgress || {},
                     trainingTypes: data.trainingTypes || deepClone(defaultTrainingTypes),
-                    weeklySchedules: []
+                    weeklySchedules: data.weeklySchedules || [],
+                    phaseData: data.phaseData || deepClone(defaultPhaseData)
                 };
 
-                if (data.planData) { 
-                    const getPhaseForWeek = (weekIndex) => {
-                        if (weekIndex <= 10) return 1; if (weekIndex <= 21) return 2; if (weekIndex <= 32) return 3; return 4;
-                    };
-                    for(let i = 0; i < 44; i++) {
-                        const phase = getPhaseForWeek(i);
-                        migratedData.weeklySchedules.push({
-                            phase: phase,
-                            schedule: deepClone(data.planData[phase].schedule)
-                        });
-                    }
-                } else { 
-                     const getPhaseForWeek = (weekIndex) => {
-                        if (weekIndex <= 10) return 1; if (weekIndex <= 21) return 2; if (weekIndex <= 32) return 3; return 4;
-                    };
-                    for(let i = 0; i < 44; i++) {
-                        const phase = getPhaseForWeek(i);
-                        migratedData.weeklySchedules.push({
-                            phase: phase,
-                            schedule: deepClone(defaultPlanData[phase].schedule)
-                        });
-                    }
+                if (!data.phaseData) {
+                    console.log("PhaseData nicht gefunden, wird initialisiert.");
+                    migratedData.phaseData = deepClone(defaultPhaseData);
                 }
+                
                 console.log("Migration abgeschlossen.");
                 return migratedData;
             }
@@ -436,46 +425,37 @@
                     startDateOfPlan: state.startDateOfPlan.toISOString(),
                     trainingProgress: state.trainingProgress,
                     weeklySchedules: state.weeklySchedules,
-                    trainingTypes: state.trainingTypes
+                    trainingTypes: state.trainingTypes,
+                    phaseData: state.phaseData
                 }));
             } catch (e) { console.error("Fehler beim Speichern des Zustands:", e); }
         };
 
         const initState = () => {
-            const { defaultPlanData, defaultTrainingTypes } = initializeDefaultData();
-            state.startDateOfPlan = new Date('2025-06-23T00:00:00Z');
+            const { defaultPhaseData, defaultTrainingTypes } = initializeDefaultData();
+            state.startDateOfPlan = new Date();
             state.trainingTypes = deepClone(defaultTrainingTypes);
+            state.phaseData = deepClone(defaultPhaseData); 
             state.trainingProgress = {};
-            state.weeklySchedules = [];
-            const getPhaseForWeek = (weekIndex) => {
-                if (weekIndex <= 10) return 1; if (weekIndex <= 21) return 2; if (weekIndex <= 32) return 3; return 4;
-            };
-            for(let i = 0; i < 44; i++) {
-                const phase = getPhaseForWeek(i);
-                state.weeklySchedules.push({
-                    phase: phase,
-                    schedule: deepClone(defaultPlanData[phase].schedule)
-                });
-            }
+            state.weeklySchedules = []; 
             saveState();
         };
         
         const loadState = () => {
             try {
                 const storedStateJSON = localStorage.getItem('tennisPlanState');
-                if (!storedStateJSON) { initState(); return; }
-                
-                let storedState = JSON.parse(storedStateJSON);
-                
-                storedState = migrateDataModel(storedState);
-
-                state.startDateOfPlan = parseDate(storedState.startDateOfPlan);
-                if (isNaN(state.startDateOfPlan.getTime())) { initState(); return; }
-
-                state.trainingProgress = storedState.trainingProgress;
-                state.weeklySchedules = storedState.weeklySchedules;
-                state.trainingTypes = storedState.trainingTypes;
-
+                if (!storedStateJSON) { 
+                    initState(); 
+                } else {
+                    let storedState = JSON.parse(storedStateJSON);
+                    storedState = migrateDataModel(storedState);
+                    state.startDateOfPlan = parseDate(storedState.startDateOfPlan);
+                    if (isNaN(state.startDateOfPlan.getTime())) { initState(); return; }
+                    state.trainingProgress = storedState.trainingProgress;
+                    state.weeklySchedules = storedState.weeklySchedules;
+                    state.trainingTypes = storedState.trainingTypes;
+                    state.phaseData = storedState.phaseData;
+                }
             } catch (e) {
                 console.error("Fehler beim Laden des Zustands:", e);
                 initState();
@@ -496,6 +476,7 @@
         };
         
         const getActualCurrentWeekIndex = () => {
+            if (state.weeklySchedules.length === 0) return -1;
             const today = new Date();
             const diffTime = today.getTime() - state.startDateOfPlan.getTime();
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -532,33 +513,42 @@
         };
 
         const renderPhase = () => {
-            const { defaultPlanData } = initializeDefaultData();
+            if (state.currentWeekIndex === -1) {
+                DOMElements.phaseGoals.innerHTML = '<p class="text-gray-500">Füge eine Woche hinzu, um Ziele zu setzen.</p>';
+                DOMElements.phaseGoalsEditor.value = '';
+                DOMElements.phaseSelector.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                return;
+            }
             const currentPhase = state.weeklySchedules[state.currentWeekIndex].phase;
-            const phaseData = defaultPlanData[currentPhase];
+            const phaseData = state.phaseData[currentPhase];
             DOMElements.phaseSelector.querySelectorAll('button').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.phase == currentPhase);
             });
-            DOMElements.phaseGoals.innerHTML = phaseData.goals.map(goal => `<li>${goal}</li>`).join('');
+            DOMElements.phaseGoals.innerHTML = parseMarkdown(phaseData.goals);
+            DOMElements.phaseGoalsEditor.value = phaseData.goals;
         };
         
         const renderWeek = () => {
+            DOMElements.weeklyPlan.innerHTML = '';
+            if (state.currentWeekIndex === -1) {
+                DOMElements.currentWeekDisplay.textContent = 'Kein Plan vorhanden';
+                DOMElements.weeklyPlan.innerHTML = '<p class="text-center text-gray-500 col-span-full">Füge eine Woche hinzu, um deinen Plan zu starten!</p>';
+                return;
+            }
+
             const totalWeeks = state.weeklySchedules.length;
             const monday = getMondayOfWeek(state.currentWeekIndex);
             const sunday = new Date(monday);
             sunday.setDate(monday.getDate() + 6);
-            const dateFormatter = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            DOMElements.currentWeekDisplay.textContent = `Woche ${state.currentWeekIndex + 1} / ${totalWeeks} (${dateFormatter.format(monday)} - ${dateFormatter.format(sunday)})`;
-
-            while(DOMElements.weeklyPlan.firstChild && DOMElements.weeklyPlan.firstChild !== DOMElements.editModeToggleBtn) {
-                DOMElements.weeklyPlan.removeChild(DOMElements.weeklyPlan.firstChild);
-            }
+            const dateFormatter = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
+            DOMElements.currentWeekDisplay.textContent = `Woche ${state.currentWeekIndex + 1} von ${totalWeeks} (${dateFormatter.format(monday)} - ${dateFormatter.format(sunday)})`;
             
             const schedule = state.weeklySchedules[state.currentWeekIndex].schedule;
             for (let i = 0; i < 7; i++) {
                 const day = new Date(monday);
                 day.setDate(monday.getDate() + i);
                 const card = createTrainingCard(day, i, schedule[i]);
-                DOMElements.weeklyPlan.insertBefore(card, DOMElements.editModeToggleBtn);
+                DOMElements.weeklyPlan.appendChild(card);
             }
         };
         
@@ -628,12 +618,26 @@
             DOMElements.weekEditControls.classList.toggle('hidden', !state.isEditMode);
             DOMElements.weekEditControls.classList.toggle('flex', state.isEditMode);
 
-            DOMElements.prevWeekBtn.disabled = state.currentWeekIndex === 0;
+            if (state.isEditMode) {
+                const goalsListHeight = DOMElements.phaseGoals.offsetHeight;
+                DOMElements.phaseGoalsEditor.style.height = `${goalsListHeight > 20 ? goalsListHeight * 1.2 : 100}px`;
+            }
+
+            DOMElements.phaseGoals.classList.toggle('hidden', state.isEditMode);
+            DOMElements.phaseGoalsEditor.classList.toggle('hidden', !state.isEditMode);
+
+            DOMElements.prevWeekBtn.disabled = state.currentWeekIndex <= 0;
             DOMElements.nextWeekBtn.disabled = state.currentWeekIndex >= state.weeklySchedules.length - 1;
             DOMElements.versionFooter.textContent = `Interaktiver Trainingsplan - v${HTML_VERSION} - Datenmodell v${DATA_MODEL_VERSION}`;
         };
 
         const renderChart = () => {
+            if (state.currentWeekIndex === -1) {
+                if(weeklyFocusChart) weeklyFocusChart.destroy();
+                weeklyFocusChart = null;
+                document.getElementById('weeklyFocusLegend').innerHTML = '';
+                return;
+            }
             const schedule = state.weeklySchedules[state.currentWeekIndex].schedule;
             
             const categoryCounts = schedule.reduce((acc, item) => {
@@ -704,6 +708,11 @@
         };
 
         const calculateAndRenderIntensityIndex = () => {
+            if (state.currentWeekIndex === -1) {
+                DOMElements.intensityIndex.textContent = '–';
+                DOMElements.intensityIndex.style.color = '#969ba0';
+                return;
+            }
             const schedule = state.weeklySchedules[state.currentWeekIndex].schedule;
             
             const intensityMultipliers = {
@@ -740,6 +749,10 @@
         };
 
         const renderStatistics = () => {
+             if (state.weeklySchedules.length === 0) {
+                DOMElements.statsTableBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-gray-500">Keine Daten vorhanden.</td></tr>`;
+                return;
+            }
             let totalCompleted = 0, totalMissed = 0, totalOpen = 0;
             let weekCompleted = 0, weekMissed = 0, weekOpen = 0;
             const today = new Date();
@@ -923,9 +936,24 @@
 
         const renderCategoryEditor = () => {
             const container = DOMElements.categoryEditorContent;
-            const editableTypes = Object.entries(state.trainingTypes)
+            let editableTypes = Object.entries(state.trainingTypes)
                 .filter(([name, details]) => name !== 'Leer');
             
+            const intensityOrder = { 'Pause': 0, 'Regeneration': 1, 'Training': 2, 'Match': 3 };
+
+            editableTypes.sort((a, b) => {
+                const [nameA, detailsA] = a;
+                const [nameB, detailsB] = b;
+                
+                if (categorySortState.key === 'name') {
+                    return categorySortState.order === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+                } else { // sort by intensity
+                    const intensityA = intensityOrder[detailsA.category];
+                    const intensityB = intensityOrder[detailsB.category];
+                    return categorySortState.order === 'asc' ? intensityA - intensityB : intensityB - intensityA;
+                }
+            });
+
             if (editableTypes.length === 0) {
                 container.innerHTML = `<p class="text-center text-gray-500">Es sind keine bearbeitbaren Trainingsarten vorhanden.</p>`;
                 return;
@@ -936,8 +964,8 @@
             table.innerHTML = `
                 <thead>
                     <tr>
-                        <th class="text-left font-semibold p-2">Trainingsart</th>
-                        <th class="text-left font-semibold p-2">Intensitäts-Kategorie</th>
+                        <th class="text-left font-semibold p-2 sortable-header" data-sort-key="name">Trainingsart <span class="sort-icon"></span></th>
+                        <th class="text-left font-semibold p-2 sortable-header" data-sort-key="intensity">Intensitäts-Kategorie <span class="sort-icon"></span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -946,10 +974,10 @@
                         <td class="p-2 font-medium">${name}</td>
                         <td class="p-2">
                             <select data-type-name="${name}" class="category-select w-full p-2 border rounded-md bg-gray-50">
-                                <option value="Pause" ${details.category === 'Pause' ? 'selected' : ''}>Pause (0)</option>
-                                <option value="Regeneration" ${details.category === 'Regeneration' ? 'selected' : ''}>Regeneration (1)</option>
-                                <option value="Training" ${details.category === 'Training' ? 'selected' : ''}>Training (2)</option>
-                                <option value="Match" ${details.category === 'Match' ? 'selected' : ''}>Match (3)</option>
+                                <option value="Pause" ${details.category === 'Pause' ? 'selected' : ''}>Keine Intensität (0)</option>
+                                <option value="Regeneration" ${details.category === 'Regeneration' ? 'selected' : ''}>Niedrige Intensität (1)</option>
+                                <option value="Training" ${details.category === 'Training' ? 'selected' : ''}>Mittlere Intensität (2)</option>
+                                <option value="Match" ${details.category === 'Match' ? 'selected' : ''}>Hohe Intensität (3)</option>
                             </select>
                         </td>
                     </tr>
@@ -958,6 +986,12 @@
             `;
             container.innerHTML = '';
             container.appendChild(table);
+
+            const activeHeader = container.querySelector(`[data-sort-key="${categorySortState.key}"]`);
+            if (activeHeader) {
+                const icon = activeHeader.querySelector('.sort-icon');
+                icon.textContent = categorySortState.order === 'asc' ? '▲' : '▼';
+            }
         };
         
         const handleExportClick = () => {
@@ -968,6 +1002,7 @@
                 trainingProgress: state.trainingProgress,
                 weeklySchedules: state.weeklySchedules,
                 trainingTypes: state.trainingTypes,
+                phaseData: state.phaseData
             };
             const jsonString = JSON.stringify(dataToExport, null, 2);
             const blob = new Blob([jsonString], { type: "application/json" });
@@ -1004,6 +1039,8 @@
                         state.trainingProgress = importedData.trainingProgress;
                         state.weeklySchedules = importedData.weeklySchedules;
                         state.trainingTypes = importedData.trainingTypes;
+                        state.phaseData = importedData.phaseData;
+                        state.currentWeekIndex = getActualCurrentWeekIndex();
                         saveState();
                         renderAll();
                         hideModal(DOMElements.importExportModal);
@@ -1023,6 +1060,7 @@
             if (button) {
                 const clickedPhase = parseInt(button.dataset.phase, 10);
                 const actualCurrentWeekIndex = getActualCurrentWeekIndex();
+                if (actualCurrentWeekIndex === -1) return;
                 const phaseOfActualWeek = state.weeklySchedules[actualCurrentWeekIndex].phase;
 
                 if (clickedPhase === phaseOfActualWeek) {
@@ -1126,20 +1164,21 @@
         };
 
         const handleAddWeek = () => {
-            const weekToCopy = state.weeklySchedules[state.currentWeekIndex];
-            const newWeek = deepClone(weekToCopy);
-            
-            state.weeklySchedules.splice(state.currentWeekIndex + 1, 0, newWeek);
-            state.currentWeekIndex++; 
+            const newWeek = {
+                phase: state.weeklySchedules.length > 0 ? state.weeklySchedules[state.weeklySchedules.length-1].phase : 1,
+                schedule: Array(7).fill({type: 'Leer'})
+            };
+            if (state.weeklySchedules.length === 0) {
+                state.startDateOfPlan = new Date(); 
+            }
+            state.weeklySchedules.push(newWeek);
+            state.currentWeekIndex = state.weeklySchedules.length - 1;
             saveState();
             renderAll();
         };
 
         const handleDeleteWeek = () => {
-            if (state.weeklySchedules.length <= 1) {
-                alert("Die letzte verbleibende Woche kann nicht gelöscht werden.");
-                return;
-            }
+            if (state.weeklySchedules.length === 0) return;
             
             showConfirmModal("Möchten Sie diese Woche wirklich löschen? Alle zugehörigen Fortschrittsdaten für diese 7 Tage gehen verloren. Dies kann nicht rückgängig gemacht werden.", () => {
                 const mondayOfWeek = getMondayOfWeek(state.currentWeekIndex);
@@ -1159,6 +1198,12 @@
                 saveState();
                 renderAll();
             });
+        };
+
+        const handleGoalsEdit = (e) => {
+            const currentPhase = state.weeklySchedules[state.currentWeekIndex].phase;
+            state.phaseData[currentPhase].goals = e.target.value;
+            saveState();
         };
         
         // --- Init ---
@@ -1213,6 +1258,19 @@
                 hideModal(DOMElements.editCategoriesModal);
                 renderAll(); 
             });
+            DOMElements.categoryEditorContent.addEventListener('click', (e) => {
+                const header = e.target.closest('.sortable-header');
+                if (header) {
+                    const sortKey = header.dataset.sortKey;
+                    if (categorySortState.key === sortKey) {
+                        categorySortState.order = categorySortState.order === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        categorySortState.key = sortKey;
+                        categorySortState.order = 'asc';
+                    }
+                    renderCategoryEditor();
+                }
+            });
             DOMElements.categoryEditorContent.addEventListener('change', (e) => {
                 if (e.target.classList.contains('category-select')) {
                     const typeName = e.target.dataset.typeName;
@@ -1223,6 +1281,8 @@
                     }
                 }
             });
+
+            DOMElements.phaseGoalsEditor.addEventListener('input', handleGoalsEdit);
 
             renderAll();
             renderRandomTips(); 
