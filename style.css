@@ -1,6 +1,5 @@
 :root {
     --primary-color: #2C5282;
-    /* --- MODIFIED: Changed the main text color --- */
     --text-color: #2c313e;
     --link-button-color: #54749b;
     --phase-inactive-color: #969ba0;
@@ -15,7 +14,6 @@ body {
 h2, h3, h4 {
     color: var(--text-color);
 }
-/* --- ADDED: Override for dark Tailwind text colors --- */
 .text-gray-900, .text-gray-800 {
     color: var(--text-color) !important;
 }
@@ -28,13 +26,12 @@ h2, h3, h4 {
     box-shadow: var(--main-shadow);
 }
 
-/* Base styling for phase selection buttons */
 .phase-button {
     transition: all 0.3s ease;
     background-color: var(--phase-inactive-color);
     color: white;
     text-align: center;
-    white-space: nowrap; /* Prevents text from wrapping */
+    white-space: nowrap; 
     display: flex;
     justify-content: center;
     align-items: center;
@@ -48,7 +45,6 @@ h2, h3, h4 {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Styling for other buttons */
 #prev-week-btn, #next-week-btn, #add-training-submit-btn, #export-data-btn {
     background-color: var(--link-button-color);
     color: white;
@@ -190,7 +186,6 @@ input[type="file"] {
     color: #54749b;
 }
 
-/* === ADDED: Style for new week edit buttons === */
 .edit-mode-icon-btn {
     color: var(--link-button-color);
     background-color: #E2E8F0;
@@ -207,4 +202,41 @@ input[type="file"] {
 }
 .edit-mode-icon-btn:hover {
     background-color: #CBD5E0;
+}
+
+.intensity-index {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.5rem; /* 40px */
+    font-weight: 700;
+    z-index: 10; 
+    pointer-events: none; 
+}
+
+/* === ADDED: Styles for category editor table === */
+.category-editor-table {
+    border-collapse: collapse;
+}
+.category-editor-table th,
+.category-editor-table td {
+    border-bottom: 1px solid #e2e8f0;
+}
+.category-editor-table th:first-child,
+.category-editor-table td:first-child {
+    width: 50%;
+}
+.category-editor-table tr:last-child td {
+    border-bottom: none;
+}
+.category-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
 }

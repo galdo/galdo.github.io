@@ -51,14 +51,13 @@
                             <h3 class="text-lg font-bold mb-3 text-center text-gray-900">Wöchentlicher Fokus</h3>
                             <div class="chart-container">
                                 <canvas id="weeklyFocusChart"></canvas>
+                                <div id="intensity-index" class="intensity-index"></div>
                             </div>
                             <div id="weeklyFocusLegend" class="flex justify-center flex-nowrap gap-x-3 mt-4 text-xs"></div>
                         </div>
                         <div>
                             <h3 class="text-2xl font-bold mb-3 text-gray-900">Wichtige Tipps</h3>
-                            <!-- === MODIFIED: Container for dynamic tips === -->
                             <div id="tips-container" class="space-y-4">
-                                <!-- Tips will be dynamically inserted here -->
                             </div>
                         </div>
                     </div>
@@ -130,6 +129,11 @@
                     <h2 id="add-modal-title" class="text-2xl md:text-3xl font-bold"></h2>
                     <button id="add-training-close-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
                 </div>
+                <div class="mb-4">
+                    <button type="button" id="edit-categories-btn" class="w-full text-sm font-semibold py-2 px-4 rounded-lg transition-colors bg-gray-200 hover:bg-gray-300">
+                        <i class="fa-solid fa-pencil-alt mr-2"></i> Intensitäts-Kategorien bearbeiten
+                    </button>
+                </div>
                 <form id="add-training-form">
                     <div class="space-y-4">
                         <div>
@@ -159,6 +163,20 @@
                         </div>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-categories-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-start">
+                    <h2 class="text-2xl md:text-3xl font-bold">Intensitäts-Kategorien</h2>
+                    <button id="edit-categories-close-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+                </div>
+                 <p class="text-sm text-gray-600 mt-2">Hier können Sie die Intensität für jede Trainingsart festlegen. Die Änderung wirkt sich auf die Berechnung des Intensitätsindex aus.</p>
+            </div>
+            <div id="category-editor-content" class="p-6 overflow-y-auto">
             </div>
         </div>
     </div>
@@ -207,7 +225,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         Chart.register(ChartDataLabels);
         
-        const HTML_VERSION = "1.2"; // Version updated
+        const HTML_VERSION = "1.8"; // Version updated for full category editor
         const DATA_MODEL_VERSION = 3;
 
         // --- State Management ---
@@ -226,7 +244,6 @@
         let weeklyFocusChart;
         let weightCurveChart;
 
-        // === ADDED: List of all tips ===
         const allTips = [
             { icon: '🧠', title: 'Mentale Stärke', text: 'Tennis ist Kopfsache. Bleib geduldig, analysiere Fehler konstruktiv und lass dich von Rückschlägen nicht entmutigen.' },
             { icon: '🏃‍♂️', title: 'Konstanz schlägt Intensität', text: 'Regelmäßiges, geplantes Training ist effektiver als unregelmäßige, überintensive Einheiten. Höre auf deinen Körper, um Verletzungen zu vermeiden.' },
@@ -261,7 +278,8 @@
             weekEditControls: document.getElementById('week-edit-controls'),
             addWeekBtn: document.getElementById('add-week-btn'),
             deleteWeekBtn: document.getElementById('delete-week-btn'),
-            tipsContainer: document.getElementById('tips-container'), // Added
+            tipsContainer: document.getElementById('tips-container'),
+            intensityIndex: document.getElementById('intensity-index'), 
             // Modals
             exerciseModal: document.getElementById('exercise-modal'),
             modalTitle: document.getElementById('modal-title'),
@@ -288,7 +306,12 @@
             confirmModalText: document.getElementById('confirm-modal-text'),
             confirmModalConfirmBtn: document.getElementById('confirm-modal-confirm-btn'),
             confirmModalCancelBtn: document.getElementById('confirm-modal-cancel-btn'),
-            versionFooter: document.getElementById('version-footer')
+            versionFooter: document.getElementById('version-footer'),
+            // Category Editor
+            editCategoriesBtn: document.getElementById('edit-categories-btn'),
+            editCategoriesModal: document.getElementById('edit-categories-modal'),
+            editCategoriesCloseBtn: document.getElementById('edit-categories-close-btn'),
+            categoryEditorContent: document.getElementById('category-editor-content'),
         };
 
         // --- Utility ---
@@ -481,17 +504,15 @@
             renderPhase();
             renderWeek();
             renderChart();
+            calculateAndRenderIntensityIndex(); 
             renderStatistics();
             renderWeightChart();
             renderUIState();
         };
         
-        // === ADDED: Function to render random tips ===
         const renderRandomTips = () => {
             const container = DOMElements.tipsContainer;
-            container.innerHTML = ''; // Clear existing tips
-            
-            // Shuffle array and pick 3
+            container.innerHTML = ''; 
             const shuffled = [...allTips].sort(() => 0.5 - Math.random());
             const selectedTips = shuffled.slice(0, 3);
 
@@ -554,7 +575,7 @@
             
             const dateTextColorClass = dayProgress.completed ? 'text-[#ecedee]' : 'text-gray-500';
 
-            card.className = 'training-card p-4 rounded-xl flex flex-col justify-between transition-all duration-200 relative bg-white';
+            card.className = 'training-card py-4 px-3 rounded-xl flex flex-col justify-between transition-all duration-200 relative bg-white';
             card.dataset.activity = activityType;
             card.dataset.date = dateKey;
             card.dataset.dayIndex = dayIndex;
@@ -637,6 +658,7 @@
 
             const chartOptions = {
                 responsive: true, maintainAspectRatio: true,
+                cutout: '50%', 
                 plugins: {
                     legend: { display: false },
                     datalabels: {
@@ -675,6 +697,42 @@
                     legendContainer.appendChild(li);
                 }
             });
+        };
+
+        const calculateAndRenderIntensityIndex = () => {
+            const schedule = state.weeklySchedules[state.currentWeekIndex].schedule;
+            
+            const intensityMultipliers = {
+                'Match': 3,
+                'Training': 2,
+                'Regeneration': 1,
+                'Pause': 0,
+                'Leer': 0
+            };
+            
+            let totalPoints = 0;
+            schedule.forEach(item => {
+                const type = item ? item.type : 'Leer';
+                const category = state.trainingTypes[type]?.category || 'Leer';
+                totalPoints += intensityMultipliers[category] || 0;
+            });
+            
+            const maxPoints = 7 * 3; 
+            const index = Math.round((totalPoints / maxPoints) * 99);
+            
+            let color;
+            if (index >= 50) {
+                color = '#ec777e'; 
+            } else if (index >= 40) {
+                color = '#eeafb5'; 
+            } else if (index >= 30) {
+                color = '#55759b'; 
+            } else {
+                color = '#88bab8'; 
+            }
+
+            DOMElements.intensityIndex.textContent = index;
+            DOMElements.intensityIndex.style.color = color;
         };
 
         const renderStatistics = () => {
@@ -858,6 +916,47 @@
             renderTrainingTypeDatalist();
             showModal(DOMElements.addTrainingModal);
         };
+
+        const renderCategoryEditor = () => {
+            const container = DOMElements.categoryEditorContent;
+            // === MODIFIED: Filter changed to only exclude 'Leer' ===
+            const editableTypes = Object.entries(state.trainingTypes)
+                .filter(([name, details]) => name !== 'Leer');
+            
+            if (editableTypes.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500">Es sind keine bearbeitbaren Trainingsarten vorhanden.</p>`;
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'category-editor-table w-full text-sm';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th class="text-left font-semibold p-2">Trainingsart</th>
+                        <th class="text-left font-semibold p-2">Intensitäts-Kategorie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                ${editableTypes.map(([name, details]) => `
+                    <tr>
+                        <td class="p-2 font-medium">${name}</td>
+                        <td class="p-2">
+                            <select data-type-name="${name}" class="category-select w-full p-2 border rounded-md bg-gray-50">
+                                <!-- === ADDED: Pause option === -->
+                                <option value="Pause" ${details.category === 'Pause' ? 'selected' : ''}>Pause (0)</option>
+                                <option value="Regeneration" ${details.category === 'Regeneration' ? 'selected' : ''}>Regeneration (1)</option>
+                                <option value="Training" ${details.category === 'Training' ? 'selected' : ''}>Training (2)</option>
+                                <option value="Match" ${details.category === 'Match' ? 'selected' : ''}>Match (3)</option>
+                            </select>
+                        </td>
+                    </tr>
+                `).join('')}
+                </tbody>
+            `;
+            container.innerHTML = '';
+            container.appendChild(table);
+        };
         
         const handleExportClick = () => {
             const dataToExport = {
@@ -1000,12 +1099,16 @@
             const newType = DOMElements.addTrainingTypeInput.value.trim();
             if (!newType) return;
 
-            const existingCategory = state.trainingTypes[newType]?.category;
+            let category = state.trainingTypes[newType]?.category || 'Training'; 
+            if (newType.toLowerCase() === 'urlaub') {
+                category = 'Pause';
+            }
+
             state.trainingTypes[newType] = {
                 icon: DOMElements.addTrainingIconInput.value.trim(),
                 shortDescription: DOMElements.addTrainingShortDescriptionInput.value.trim(),
                 description: DOMElements.addTrainingDescriptionInput.value.trim(),
-                category: existingCategory || 'Training'
+                category: category
             };
             
             state.weeklySchedules[state.currentWeekIndex].schedule[dayIndex].type = newType;
@@ -1100,8 +1203,27 @@
             DOMElements.addWeekBtn.addEventListener('click', handleAddWeek);
             DOMElements.deleteWeekBtn.addEventListener('click', handleDeleteWeek);
 
+            DOMElements.editCategoriesBtn.addEventListener('click', () => {
+                renderCategoryEditor();
+                showModal(DOMElements.editCategoriesModal);
+            });
+            DOMElements.editCategoriesCloseBtn.addEventListener('click', () => {
+                hideModal(DOMElements.editCategoriesModal);
+                renderAll(); 
+            });
+            DOMElements.categoryEditorContent.addEventListener('change', (e) => {
+                if (e.target.classList.contains('category-select')) {
+                    const typeName = e.target.dataset.typeName;
+                    const newCategory = e.target.value;
+                    if (state.trainingTypes[typeName]) {
+                        state.trainingTypes[typeName].category = newCategory;
+                        saveState();
+                    }
+                }
+            });
+
             renderAll();
-            renderRandomTips(); // Call the function to display tips on initial load
+            renderRandomTips(); 
         };
 
         init();
