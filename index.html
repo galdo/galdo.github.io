@@ -19,6 +19,24 @@
 </head>
 <body class="text-gray-800">
 
+    <!-- Mobile Header -->
+    <div id="mobile-header" class="hidden">
+        <h1 class="text-xl font-bold" style="color: #45658e;">Trainingsplan</h1>
+        <button id="burger-menu-btn" aria-label="Menü öffnen">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div id="mobile-nav">
+        <button id="mobile-nav-close-btn" aria-label="Menü schließen">&times;</button>
+        <button id="mobile-import-export-btn" class="mobile-nav-link">
+            <i class="fa-solid fa-rotate"></i> Daten Import & Export
+        </button>
+    </div>
+    <div id="mobile-nav-overlay"></div>
+
+
     <div id="app" class="container mx-auto p-4 md:p-4" style="max-width: 82.4rem;">
 
         <main class="mt-0">
@@ -42,7 +60,7 @@
             <div id="content-area" class="gradient-bg p-6 rounded-2xl relative box">
                 <div class="flex flex-col lg:flex-row gap-8">
                     
-                    <div class="lg:w-1/3 flex flex-col justify-between">
+                    <div id="left-content-column" class="lg:w-1/3 flex flex-col justify-between">
                         <div>
                             <h3 class="text-2xl font-bold mb-3 text-gray-900">Ziele dieser Phase</h3>
                             <div id="phase-goals" class="prose text-sm"></div>
@@ -82,7 +100,7 @@
                                 <button id="edit-mode-toggle-btn" class="absolute bottom-4 right-4" aria-label="Plan bearbeiten"></button>
                             </div>
                             
-                            <div class="mt-8 p-6 rounded-2xl box">
+                            <div id="stats-section" class="mt-8 p-6 rounded-2xl box">
                                 <h2 class="text-2xl font-bold text-center mb-6 text-gray-900">Dein Trainingsfortschritt</h2>
                                 <div class="overflow-x-auto">
                                     <table class="min-w-full bg-white rounded-xl">
@@ -100,7 +118,7 @@
                             </div>
                         </div>
 
-                        <div class="mt-8 p-6 rounded-2xl box flex-grow flex flex-col">
+                        <div id="weight-section" class="mt-8 p-6 rounded-2xl box flex-grow flex flex-col">
                             <h2 class="text-2xl font-bold text-center mb-6 text-gray-900">Deine Gewichtsentwicklung</h2>
                             <div class="flex-grow" style="position: relative; min-height: 250px;">
                                 <canvas id="weight-curve-chart" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
@@ -115,7 +133,7 @@
     </div>
 
     <div id="exercise-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+        <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
             <div class="p-6 md:p-8">
                 <div class="flex justify-between items-start mb-4">
                     <h2 id="modal-title" class="text-2xl md:text-3xl font-bold"></h2>
@@ -127,7 +145,7 @@
     </div>
 
     <div id="add-training-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
+        <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
             <div class="p-6 md:p-8">
                 <div class="flex justify-between items-start mb-4">
                     <h2 id="add-modal-title" class="text-2xl md:text-3xl font-bold"></h2>
@@ -172,7 +190,7 @@
     </div>
 
     <div id="edit-categories-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative max-h-[90vh] flex flex-col">
+        <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-lg relative max-h-[90vh] flex flex-col">
             <div class="p-6 border-b">
                 <div class="flex justify-between items-start">
                     <h2 class="text-2xl md:text-3xl font-bold">Intensitäts-Kategorien</h2>
@@ -186,7 +204,7 @@
     </div>
 
     <div id="import-export-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
+        <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
             <div class="p-6 md:p-8">
                 <div class="flex justify-between items-start mb-4">
                     <h2 class="text-2xl md:text-3xl font-bold">Daten Import & Export</h2>
@@ -213,7 +231,7 @@
     </div>
 
     <div id="confirm-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-sm">
             <div class="p-6 text-center">
                 <h2 id="confirm-modal-title" class="text-xl font-bold mb-4">Aktion bestätigen</h2>
                 <p id="confirm-modal-text" class="mb-6"></p>
@@ -229,7 +247,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         Chart.register(ChartDataLabels);
         
-        const HTML_VERSION = "1.9.3"; // Version updated for empty start
+        const HTML_VERSION = "2.0.0"; // Version updated for mobile view
         const DATA_MODEL_VERSION = 4;
 
         // --- State Management ---
@@ -290,6 +308,12 @@
             deleteWeekBtn: document.getElementById('delete-week-btn'),
             tipsContainer: document.getElementById('tips-container'),
             intensityIndex: document.getElementById('intensity-index'), 
+            // Mobile Nav
+            burgerMenuBtn: document.getElementById('burger-menu-btn'),
+            mobileNav: document.getElementById('mobile-nav'),
+            mobileNavCloseBtn: document.getElementById('mobile-nav-close-btn'),
+            mobileImportExportBtn: document.getElementById('mobile-import-export-btn'),
+            mobileNavOverlay: document.getElementById('mobile-nav-overlay'),
             // Modals
             exerciseModal: document.getElementById('exercise-modal'),
             modalTitle: document.getElementById('modal-title'),
@@ -550,6 +574,17 @@
                 const card = createTrainingCard(day, i, schedule[i]);
                 DOMElements.weeklyPlan.appendChild(card);
             }
+
+            // Auto-scroll to today's card on mobile
+            if (window.innerWidth <= 1023) {
+                const todayCard = DOMElements.weeklyPlan.querySelector('.is-today');
+                if (todayCard) {
+                    // Use a timeout to ensure the DOM is fully painted before scrolling
+                    setTimeout(() => {
+                        todayCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 150); 
+                }
+            }
         };
         
         const createTrainingCard = (day, dayIndex, activity) => {
@@ -574,6 +609,10 @@
             card.dataset.date = dateKey;
             card.dataset.dayIndex = dayIndex;
             
+            if (isToday) {
+                card.classList.add('is-today');
+            }
+
             let innerHTML = `
                 <div>
                     <p class="font-bold text-sm ${dateTextColorClass}">${DAYS_OF_WEEK[dayIndex]}, ${dayFormatted}</p>
@@ -845,7 +884,7 @@
             }
         };
 
-        // --- Modals ---
+        // --- Modals & Mobile Nav ---
         const showModal = (modal) => {
             modal.classList.remove('invisible', 'opacity-0');
             document.body.style.overflow = 'hidden';
@@ -853,6 +892,18 @@
 
         const hideModal = (modal) => {
             modal.classList.add('invisible', 'opacity-0');
+            document.body.style.overflow = '';
+        };
+
+        const openMobileNav = () => {
+            DOMElements.mobileNav.classList.add('open');
+            DOMElements.mobileNavOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        };
+
+        const closeMobileNav = () => {
+            DOMElements.mobileNav.classList.remove('open');
+            DOMElements.mobileNavOverlay.classList.remove('open');
             document.body.style.overflow = '';
         };
         
@@ -1217,10 +1268,17 @@
             DOMElements.weeklyPlan.addEventListener('click', handleWeeklyPlanClick);
             DOMElements.currentWeekContainer.addEventListener('click', handleJumpToCurrentWeek);
             
-            DOMElements.importExportBtn.addEventListener('click', () => {
+            const openImportExportModal = () => {
                 DOMElements.importFeedbackArea.innerHTML = '';
                 showModal(DOMElements.importExportModal);
+            };
+
+            DOMElements.importExportBtn.addEventListener('click', openImportExportModal);
+            DOMElements.mobileImportExportBtn.addEventListener('click', () => {
+                closeMobileNav();
+                openImportExportModal();
             });
+
             DOMElements.importExportCloseBtn.addEventListener('click', () => hideModal(DOMElements.importExportModal));
             DOMElements.exportDataBtn.addEventListener('click', handleExportClick);
             DOMElements.importFileInput.addEventListener('change', handleImportChange);
@@ -1283,6 +1341,11 @@
             });
 
             DOMElements.phaseGoalsEditor.addEventListener('input', handleGoalsEdit);
+
+            // Mobile Nav Listeners
+            DOMElements.burgerMenuBtn.addEventListener('click', openMobileNav);
+            DOMElements.mobileNavCloseBtn.addEventListener('click', closeMobileNav);
+            DOMElements.mobileNavOverlay.addEventListener('click', closeMobileNav);
 
             renderAll();
             renderRandomTips(); 
