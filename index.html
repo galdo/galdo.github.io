@@ -19,7 +19,6 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- Mobile Header -->
     <div id="mobile-header" class="hidden">
         <h1 class="text-xl font-bold" style="color: #45658e;">Trainingsplan</h1>
         <button id="burger-menu-btn" aria-label="Menü öffnen">
@@ -27,7 +26,6 @@
         </button>
     </div>
 
-    <!-- Mobile Navigation -->
     <div id="mobile-nav">
         <button id="mobile-nav-close-btn" aria-label="Menü schließen">&times;</button>
         <button id="mobile-sync-backup-btn" class="mobile-nav-link">
@@ -85,12 +83,10 @@
                         <div>
                             <div class="flex justify-between items-center mb-4">
                                 <button id="prev-week-btn" class="py-1.5 px-3.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">←</button>
-                                <div class="flex items-center gap-3">
+                                <div class="flex items-center flex-nowrap gap-2">
                                     <h3 id="current-week-display-wrapper" class="text-2xl font-bold text-gray-900 text-center cursor-pointer"><span id="current-week-display"></span></h3>
-                                    <div id="week-edit-controls" class="hidden items-center gap-2">
-                                         <button id="add-week-btn" class="edit-mode-icon-btn" aria-label="Neue Woche hinzufügen"><i class="fa-solid fa-plus"></i></button>
-                                         <button id="delete-week-btn" class="edit-mode-icon-btn" aria-label="Diese Woche löschen"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
+                                    <button id="add-week-btn" class="edit-mode-icon-btn hidden" aria-label="Neue Woche hinzufügen"><i class="fa-solid fa-plus"></i></button>
+                                    <button id="delete-week-btn" class="edit-mode-icon-btn hidden" aria-label="Diese Woche löschen"><i class="fa-solid fa-trash-can"></i></button>
                                 </div>
                                 <button id="next-week-btn" class="py-1.5 px-3.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">→</button>
                             </div>
@@ -211,7 +207,6 @@
                     <button id="sync-backup-close-btn" class="modal-close-button text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
                 </div>
                 
-                <!-- Online Sync Section -->
                 <div id="online-sync-section" class="space-y-4">
                     <h3 class="text-lg font-semibold">Online-Synchronisation (Empfohlen)</h3>
                     <p class="text-sm text-gray-600">Teilen Sie diesen Link, um den Plan auf anderen Geräten zu laden. Änderungen werden nach dem Bearbeiten automatisch synchronisiert.</p>
@@ -236,7 +231,6 @@
                     </div>
                 </div>
 
-                <!-- Manual Backup Section -->
                 <div class="border-t pt-6 mt-6 space-y-6">
                     <h3 class="text-lg font-semibold">Manuelles Backup (Offline)</h3>
                     <div>
@@ -273,7 +267,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         Chart.register(ChartDataLabels);
         
-        const HTML_VERSION = "2.3.0";
+        const HTML_VERSION = "2.3.1";
         const DATA_MODEL_VERSION = 5;
         const JSONBLOB_API_URL = "https://jsonblob.com/api/jsonBlob";
 
@@ -318,7 +312,6 @@
             statsTableBody: document.getElementById('stats-table-body'),
             editModeToggleBtn: document.getElementById('edit-mode-toggle-btn'),
             syncBackupBtn: document.getElementById('sync-backup-btn'),
-            weekEditControls: document.getElementById('week-edit-controls'),
             addWeekBtn: document.getElementById('add-week-btn'),
             deleteWeekBtn: document.getElementById('delete-week-btn'),
             tipsContainer: document.getElementById('tips-container'),
@@ -638,7 +631,8 @@
         const renderUIState = () => {
             DOMElements.editModeToggleBtn.innerHTML = state.isEditMode ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-pencil"></i>';
             DOMElements.editModeToggleBtn.classList.toggle('edit-mode', state.isEditMode);
-            DOMElements.weekEditControls.classList.toggle('hidden', !state.isEditMode);
+            DOMElements.addWeekBtn.classList.toggle('hidden', !state.isEditMode);
+            DOMElements.deleteWeekBtn.classList.toggle('hidden', !state.isEditMode);
             DOMElements.phaseGoals.classList.toggle('hidden', state.isEditMode);
             DOMElements.phaseGoalsEditor.classList.toggle('hidden', !state.isEditMode);
             DOMElements.prevWeekBtn.disabled = state.currentWeekIndex <= 0;
@@ -880,8 +874,15 @@
             let editableTypes = Object.entries(state.trainingTypes).filter(([name]) => name !== 'Leer');
             const intensityOrder = { 'Pause': 0, 'Regeneration': 1, 'Training': 2, 'Match': 3 };
             editableTypes.sort((a, b) => {
-                if (categorySortState.key === 'name') return categorySortState.order === 'asc' ? a[0].localeCompare(b[0]) : b[0].localeCompare(a[0]);
-                else return categorySortState.order === 'asc' ? intensityOrder[a[1].category] - intensityOrder[b[1].category] : intensityOrder[b[1].category] - intensityOrder[a[1].category];
+                const [nameA, detailsA] = a;
+                const [nameB, detailsB] = b;
+                if (categorySortState.key === 'name') {
+                    return categorySortState.order === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+                } else {
+                    const intensityA = intensityOrder[detailsA.category];
+                    const intensityB = intensityOrder[detailsB.category];
+                    return categorySortState.order === 'asc' ? intensityA - intensityB : intensityB - intensityA;
+                }
             });
             if (editableTypes.length === 0) {
                 container.innerHTML = `<p class="text-center text-gray-500">Keine bearbeitbaren Typen.</p>`;
@@ -1220,6 +1221,29 @@
             DOMElements.addWeekBtn.addEventListener('click', handleAddWeek);
             DOMElements.deleteWeekBtn.addEventListener('click', handleDeleteWeek);
             DOMElements.editCategoriesBtn.addEventListener('click', () => { renderCategoryEditor(); showModal(DOMElements.editCategoriesModal); });
+            DOMElements.categoryEditorContent.addEventListener('click', (e) => {
+                const header = e.target.closest('.sortable-header');
+                if (header) {
+                    const sortKey = header.dataset.sortKey;
+                    if (categorySortState.key === sortKey) {
+                        categorySortState.order = categorySortState.order === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        categorySortState.key = sortKey;
+                        categorySortState.order = 'asc';
+                    }
+                    renderCategoryEditor();
+                }
+            });
+            DOMElements.categoryEditorContent.addEventListener('change', (e) => {
+                if (e.target.classList.contains('category-select')) {
+                    const typeName = e.target.dataset.typeName;
+                    const newCategory = e.target.value;
+                    if (state.trainingTypes[typeName]) {
+                        state.trainingTypes[typeName].category = newCategory;
+                        saveState();
+                    }
+                }
+            });
             DOMElements.phaseGoalsEditor.addEventListener('input', handleGoalsEdit);
             DOMElements.burgerMenuBtn.addEventListener('click', openMobileNav);
             DOMElements.mobileNavOverlay.addEventListener('click', closeMobileNav);
