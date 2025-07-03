@@ -31,7 +31,7 @@
     <div id="mobile-nav">
         <button id="mobile-nav-close-btn" aria-label="Menü schließen">&times;</button>
         <button id="mobile-sync-backup-btn" class="mobile-nav-link">
-            <i class="fa-solid fa-rotate"></i> Synchronisation & Backup
+            <i class="fa-solid fa-rotate"></i> Synchronisation
         </button>
     </div>
     <div id="mobile-nav-overlay"></div>
@@ -66,7 +66,7 @@
                             <div id="phase-goals" class="prose text-sm"></div>
                             <textarea id="phase-goals-editor" class="hidden w-full text-sm p-2 border rounded-md bg-gray-50"></textarea>
                         </div>
-                        <div class="bg-white/60 p-4 rounded-xl my-8">
+                        <div class="bg-white/60 p-4 rounded-xl my-4">
                             <h3 class="text-lg font-bold mb-3 text-center text-gray-900">Wöchentlicher Fokus</h3>
                             <div class="chart-container">
                                 <canvas id="weeklyFocusChart"></canvas>
@@ -207,7 +207,7 @@
         <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
             <div class="p-6 md:p-8">
                 <div class="flex justify-between items-start mb-4">
-                    <h2 class="text-2xl md:text-3xl font-bold">Synchronisation & Backup</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold">Synchronisation</h2>
                     <button id="sync-backup-close-btn" class="modal-close-button text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
                 </div>
                 
@@ -273,7 +273,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         Chart.register(ChartDataLabels);
         
-        const HTML_VERSION = "2.1.1";
+        const HTML_VERSION = "2.3.0";
         const DATA_MODEL_VERSION = 5;
         const JSONBLOB_API_URL = "https://jsonblob.com/api/jsonBlob";
 
@@ -366,8 +366,70 @@
 
         const parseMarkdown = (text) => {
             if (!text) return '';
-            return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\n/g, '<br>');
+            const lines = text.split('\n');
+            let html = '';
+            let listType = null;
+            const processInline = (line) => line
+                .replace(/\*\*(.*?)\*\*|__(.*?)__/g, '<strong>$1$2</strong>')
+                .replace(/\*(.*?)\*|_(.*?)_/g, '<em>$1$2</em>');
+
+            for (const line of lines) {
+                if (line.trim() === '') {
+                    if (listType) {
+                        html += `</${listType}>`;
+                        listType = null;
+                    }
+                    continue;
+                }
+
+                if (line.startsWith('### ')) {
+                    if (listType) { html += `</${listType}>`; listType = null; }
+                    html += `<h3>${processInline(line.substring(4))}</h3>`;
+                    continue;
+                }
+                if (line.startsWith('## ')) {
+                    if (listType) { html += `</${listType}>`; listType = null; }
+                    html += `<h2>${processInline(line.substring(3))}</h2>`;
+                    continue;
+                }
+                if (line.startsWith('# ')) {
+                    if (listType) { html += `</${listType}>`; listType = null; }
+                    html += `<h1>${processInline(line.substring(2))}</h1>`;
+                    continue;
+                }
+                
+                const olMatch = line.match(/^\s*(\d+)\.\s+(.*)/);
+                if (olMatch) {
+                    if (listType !== 'ol') {
+                        if (listType) html += `</${listType}>`;
+                        html += '<ol>';
+                        listType = 'ol';
+                    }
+                    html += `<li>${processInline(olMatch[2])}</li>`;
+                    continue;
+                }
+
+                const ulMatch = line.match(/^\s*([*+-])\s+(.*)/);
+                if (ulMatch) {
+                    if (listType !== 'ul') {
+                        if (listType) html += `</${listType}>`;
+                        html += '<ul>';
+                        listType = 'ul';
+                    }
+                    html += `<li>${processInline(ulMatch[2])}</li>`;
+                    continue;
+                }
+                
+                if (listType) {
+                    html += `</${listType}>`;
+                    listType = null;
+                }
+                html += `<p>${processInline(line)}</p>`;
+            }
+            if (listType) html += `</${listType}>`;
+            return html;
         };
+
 
         const initializeDefaultData = () => {
             const defaultPhaseData = {
@@ -485,7 +547,7 @@
             const container = DOMElements.tipsContainer;
             container.innerHTML = ''; 
             const shuffled = [...allTips].sort(() => 0.5 - Math.random());
-            shuffled.slice(0, 2).forEach(tip => {
+            shuffled.slice(0, 3).forEach(tip => {
                 const tipElement = document.createElement('div');
                 tipElement.className = 'p-4 rounded-xl box';
                 tipElement.innerHTML = `<h4 class="font-bold text-lg mb-2">${tip.icon} ${tip.title}</h4><p class="text-gray-600 text-sm">${tip.text}</p>`;
