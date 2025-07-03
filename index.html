@@ -272,7 +272,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         Chart.register(ChartDataLabels);
         
-        const HTML_VERSION = "2.3.4"; // <-- Updated version
+        const HTML_VERSION = "2.3.6"; // <-- Updated version
         const DATA_MODEL_VERSION = 5;
         const JSONBLOB_API_URL = "https://jsonblob.com/api/jsonBlob";
 
@@ -476,6 +476,7 @@
                 state.lastModified = new Date().toISOString();
                 dataChangedSinceLastSync = true;
                 const stateToSave = { ...state };
+                delete stateToSave.isEditMode; // Do not save edit mode status
                 localStorage.setItem('tennisPlanState', JSON.stringify(stateToSave));
             } catch (e) { console.error("Fehler beim Speichern des Zustands:", e); }
         };
@@ -502,6 +503,7 @@
                     let storedState = JSON.parse(storedStateJSON);
                     storedState = migrateDataModel(storedState);
                     Object.assign(state, storedState);
+                    state.isEditMode = false; // Always start in non-edit mode
                     state.startDateOfPlan = parseDate(state.startDateOfPlan);
                 }
             } catch (e) {
@@ -870,6 +872,10 @@
             const isEditing = !!activityType && activityType !== 'Leer';
             DOMElements.addModalTitle.textContent = isEditing ? 'Training bearbeiten' : 'Training hinzufügen';
             DOMElements.addTrainingForm.querySelector('select').innerHTML = DAYS_OF_WEEK.map((day, i) => `<option value="${i}" ${i === dayIndex ? 'selected' : ''}>${day}</option>`).join('');
+            
+            // Reset form fields before populating
+            DOMElements.addTrainingForm.reset();
+            
             const details = isEditing ? state.trainingTypes[activityType] : {};
             DOMElements.addTrainingForm.querySelector('input[list="training-types-list"]').value = isEditing ? activityType : '';
             DOMElements.addTrainingForm.querySelector('#add-training-icon-input').value = details.icon || '';
@@ -923,32 +929,37 @@
 
         const uploadData = async () => {
             DOMElements.syncBackupBtn.classList.add('is-processing');
+            
+            const dataToSync = { ...state };
+            delete dataToSync.isEditMode;
+
             try {
                 if (!state.syncId) {
                     setSyncStatus('syncing', 'Erstelle Speicherort...');
-                    // Step 1: Create the blob. The state sent here has syncId: null
+                    // Step 1: Create the blob.
                     const response = await fetch(JSONBLOB_API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                        body: JSON.stringify(state)
+                        body: JSON.stringify(dataToSync)
                     });
                     if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
                     const locationHeader = response.headers.get('Location');
                     if (!locationHeader) throw new Error('Location header not found in response');
                     
                     const newSyncId = locationHeader.split('/').pop();
-                    state.syncId = newSyncId; // Step 2: Update state in memory with the new ID
+                    state.syncId = newSyncId; // Update state in memory with the new ID
                     
-                    // Step 3: Immediately update the blob on the server with the state that now contains the syncId.
+                    // Step 2: Immediately update the blob on the server with the state that now contains the syncId.
+                    dataToSync.syncId = newSyncId; // Add the new syncId to our data packet
                     setSyncStatus('syncing', 'Speichere ID...');
                     const updateResponse = await fetch(`${JSONBLOB_API_URL}/${state.syncId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(state)
+                        body: JSON.stringify(dataToSync)
                     });
                     if (!updateResponse.ok) throw new Error(`Could not update blob with syncId: ${updateResponse.statusText}`);
 
-                    saveState(); // Step 4: Save the final state to local storage
+                    saveState(); // Save the final state (with syncId) to local storage
                     dataChangedSinceLastSync = false;
                     setSyncStatus('success', 'Online-Speicher erstellt!');
                     updateShareLinkUI();
@@ -957,7 +968,7 @@
                     const response = await fetch(`${JSONBLOB_API_URL}/${state.syncId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(state)
+                        body: JSON.stringify(dataToSync)
                     });
                     if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
                     dataChangedSinceLastSync = false;
@@ -983,8 +994,9 @@
                     console.log("Syncing from URL, overwriting local state.");
                     remoteData = migrateDataModel(remoteData); // Ensure data model is current
                     Object.assign(state, remoteData);
+                    state.isEditMode = false; // Always start in non-edit mode
                     state.startDateOfPlan = parseDate(state.startDateOfPlan);
-                    localStorage.setItem('tennisPlanState', JSON.stringify(state));
+                    saveState();
                     dataChangedSinceLastSync = false; 
                     renderAll();
                     setSyncStatus('success', 'Plan geladen');
@@ -993,8 +1005,9 @@
                         console.log("Remote data is newer. Updating local state.");
                         remoteData = migrateDataModel(remoteData); // Ensure data model is current
                         Object.assign(state, remoteData);
+                        state.isEditMode = false; // Always start in non-edit mode
                         state.startDateOfPlan = parseDate(state.startDateOfPlan);
-                        localStorage.setItem('tennisPlanState', JSON.stringify(state));
+                        saveState();
                         dataChangedSinceLastSync = false; 
                         renderAll();
                         setSyncStatus('success', 'Aktualisiert');
@@ -1066,6 +1079,7 @@
             DOMElements.syncBackupBtn.classList.add('is-processing');
             try {
                 const dataToExport = { ...state };
+                delete dataToExport.isEditMode; // Do not export edit mode status
                 const jsonString = JSON.stringify(dataToExport, null, 2);
                 const blob = new Blob([jsonString], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
@@ -1092,6 +1106,7 @@
                     feedbackArea.innerHTML = `<p>Datei "<strong>${file.name}</strong>" geladen.</p><p class="text-red-600 font-bold my-2">Möchten Sie importieren? Alle aktuellen Daten werden überschrieben.</p><button id="confirm-import-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Ja, importieren</button>`;
                     document.getElementById('confirm-import-btn').addEventListener('click', () => {
                         Object.assign(state, importedData);
+                        state.isEditMode = false; // Always start in non-edit mode after import
                         state.startDateOfPlan = parseDate(state.startDateOfPlan);
                         saveState();
                         renderAll();
@@ -1303,6 +1318,19 @@
             DOMElements.phaseGoalsEditor.addEventListener('input', handleGoalsEdit);
             DOMElements.burgerMenuBtn.addEventListener('click', openMobileNav);
             DOMElements.mobileNavOverlay.addEventListener('click', closeMobileNav);
+
+            // BUGFIX: Add event listener to auto-fill form on training type selection
+            document.getElementById('add-training-type-input').addEventListener('input', (e) => {
+                const selectedType = e.target.value;
+                const details = state.trainingTypes[selectedType];
+                const form = DOMElements.addTrainingForm;
+
+                if (details) {
+                    form.querySelector('#add-training-icon-input').value = details.icon || '';
+                    form.querySelector('#add-training-short-description-input').value = details.shortDescription || '';
+                    form.querySelector('#add-training-description-input').value = details.description || '';
+                }
+            });
 
             renderAll();
             renderRandomTips(); 
