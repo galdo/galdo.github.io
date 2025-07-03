@@ -19,6 +19,7 @@
 </head>
 <body class="text-gray-800">
 
+    <!-- Mobile Header -->
     <div id="mobile-header" class="hidden">
         <h1 class="text-xl font-bold" style="color: #45658e;">Trainingsplan</h1>
         <button id="burger-menu-btn" aria-label="Menü öffnen">
@@ -26,6 +27,7 @@
         </button>
     </div>
 
+    <!-- Mobile Navigation -->
     <div id="mobile-nav">
         <button id="mobile-nav-close-btn" aria-label="Menü schließen">&times;</button>
         <button id="mobile-sync-backup-btn" class="mobile-nav-link">
@@ -207,6 +209,7 @@
                     <button id="sync-backup-close-btn" class="modal-close-button text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
                 </div>
                 
+                <!-- Online Sync Section -->
                 <div id="online-sync-section" class="space-y-4">
                     <h3 class="text-lg font-semibold">Online-Synchronisation (Empfohlen)</h3>
                     <p class="text-sm text-gray-600">Teilen Sie diesen Link, um den Plan auf anderen Geräten zu laden. Änderungen werden nach dem Bearbeiten automatisch synchronisiert.</p>
@@ -231,6 +234,7 @@
                     </div>
                 </div>
 
+                <!-- Manual Backup Section -->
                 <div class="border-t pt-6 mt-6 space-y-6">
                     <h3 class="text-lg font-semibold">Manuelles Backup (Offline)</h3>
                     <div>
@@ -948,7 +952,7 @@
             }
         };
 
-        const fetchData = async (syncId) => {
+        const fetchData = async (syncId, isUrlSync = false) => {
             DOMElements.syncBackupBtn.classList.add('is-processing');
             setSyncStatus('syncing', 'Prüfe auf Updates...');
             try {
@@ -956,24 +960,30 @@
                 if (!response.ok) throw new Error('Could not fetch data');
                 const remoteData = await response.json();
                 
-                const isLocalPlanEmpty = state.weeklySchedules.length === 0;
-                if (remoteData.planId !== state.planId && !isLocalPlanEmpty) {
-                     console.warn("Plan ID mismatch on existing plan. Aborting sync.");
-                     setSyncStatus('error', 'Falscher Plan');
-                     return;
-                }
-
-                if (isLocalPlanEmpty || new Date(remoteData.lastModified) > new Date(state.lastModified)) {
-                    console.log("Remote data is newer or local plan is empty. Updating local state.");
+                if (isUrlSync) {
+                    console.log("Syncing from URL, overwriting local state.");
                     Object.assign(state, remoteData);
                     state.startDateOfPlan = parseDate(state.startDateOfPlan);
                     localStorage.setItem('tennisPlanState', JSON.stringify(state));
                     dataChangedSinceLastSync = false; 
                     renderAll();
-                    setSyncStatus('success', 'Aktualisiert');
+                    setSyncStatus('success', 'Plan geladen');
+                } else if (remoteData.planId === state.planId) {
+                    if (new Date(remoteData.lastModified) > new Date(state.lastModified)) {
+                        console.log("Remote data is newer. Updating local state.");
+                        Object.assign(state, remoteData);
+                        state.startDateOfPlan = parseDate(state.startDateOfPlan);
+                        localStorage.setItem('tennisPlanState', JSON.stringify(state));
+                        dataChangedSinceLastSync = false; 
+                        renderAll();
+                        setSyncStatus('success', 'Aktualisiert');
+                    } else {
+                        console.log("Local data is up-to-date.");
+                        setSyncStatus('success', 'Aktuell');
+                    }
                 } else {
-                    console.log("Local data is up-to-date.");
-                    setSyncStatus('success', 'Aktuell');
+                    console.warn("Plan ID mismatch on existing plan. Aborting sync.");
+                    setSyncStatus('error', 'Falscher Plan');
                 }
             } catch (error) {
                 console.error("Sync failed:", error);
@@ -988,9 +998,7 @@
             const urlSyncId = urlParams.get('syncId');
             
             if (urlSyncId) {
-                state.syncId = urlSyncId;
-                saveState();
-                await fetchData(urlSyncId);
+                await fetchData(urlSyncId, true);
                 window.history.replaceState({}, document.title, window.location.pathname);
             } else if (state.syncId) {
                 await fetchData(state.syncId);
