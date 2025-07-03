@@ -3,25 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interaktiver Trainingsplan</title>
+    <title>MatchPlan Pro</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎾</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cookie&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="text-gray-800">
 
     <!-- Mobile Header -->
     <div id="mobile-header" class="hidden">
-        <h1 class="text-xl font-bold" style="color: #45658e;">Trainingsplan</h1>
+        <h1 class="text-xl font-bold" style="color: #45658e;">MatchPlan Pro</h1>
         <button id="burger-menu-btn" aria-label="Menü öffnen">
             <i class="fa-solid fa-bars"></i>
         </button>
@@ -41,8 +38,9 @@
 
         <main class="mt-0">
             <div id="phase-selector-container" class="mb-8 box rounded-xl grid grid-cols-1 lg:grid-cols-3 lg:gap-8 items-center p-4">
-                <div class="lg:col-span-1 mb-4 lg:mb-0">
-                    <h2 class="text-3xl whitespace-nowrap font-bold" style="color: #45658e; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Interaktiver Trainingsplan</h2>
+                <div class="lg:col-span-1 mb-4 lg:mb-0 flex items-center gap-3">
+                     <i class="fa-solid fa-medal app-title-icon text-3xl"></i>
+                     <h2 class="app-title text-4xl" style="color: #45658e;">MatchPlan Pro</h2>
                 </div>
                 <div class="lg:col-span-2 flex items-center gap-4">
                     <div id="phase-selector" class="flex-grow grid grid-cols-4 gap-2">
@@ -66,7 +64,7 @@
                             <div id="phase-goals" class="prose text-sm"></div>
                             <textarea id="phase-goals-editor" class="hidden w-full text-sm p-2 border rounded-md bg-gray-50"></textarea>
                         </div>
-                        <div class="bg-white/60 p-4 rounded-xl my-4">
+                        <div class="bg-white/60 p-4 rounded-xl my-8">
                             <h3 class="text-lg font-bold mb-3 text-center text-gray-900">Wöchentlicher Fokus</h3>
                             <div class="chart-container">
                                 <canvas id="weeklyFocusChart"></canvas>
@@ -125,7 +123,7 @@
 
                     </div>
                 </div>
-                 <footer id="version-footer" class="text-right text-xs mt-4" style="color: #c4c3c4;"></footer>
+                 <footer id="version-footer" class="text-right text-xs mt-4" style="color: #45658e;"></footer>
             </div>
         </main>
     </div>
@@ -223,6 +221,9 @@
                             <button id="copy-link-btn" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-md" aria-label="Link kopieren">
                                 <i class="fa-solid fa-copy"></i>
                             </button>
+                             <button id="delete-online-data-btn" class="p-2 rounded-md text-red-500 hover:bg-red-100" aria-label="Online-Plan löschen" style="color: var(--danger-color);">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
                         </div>
                     </div>
                     <div class="flex items-center justify-center gap-4 pt-2">
@@ -271,7 +272,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         Chart.register(ChartDataLabels);
         
-        const HTML_VERSION = "2.3.1";
+        const HTML_VERSION = "2.3.3";
         const DATA_MODEL_VERSION = 5;
         const JSONBLOB_API_URL = "https://jsonblob.com/api/jsonBlob";
 
@@ -352,6 +353,7 @@
             manualSyncBtn: document.getElementById('manual-sync-btn'),
             syncStatusIcon: document.getElementById('sync-status-icon'),
             syncStatusText: document.getElementById('sync-status-text'),
+            deleteOnlineDataBtn: document.getElementById('delete-online-data-btn'),
             exportDataBtn: document.getElementById('export-data-btn'),
             importFileInput: document.getElementById('import-file-input'),
             importFeedbackArea: document.getElementById('import-feedback-area'),
@@ -577,8 +579,13 @@
             const sunday = new Date(monday);
             sunday.setDate(monday.getDate() + 6);
             const dateFormatter = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
-            DOMElements.currentWeekDisplay.textContent = `Woche ${state.currentWeekIndex + 1} von ${totalWeeks} (${dateFormatter.format(monday)} - ${dateFormatter.format(sunday)})`;
             
+            if (window.innerWidth <= 1023) {
+                 DOMElements.currentWeekDisplay.textContent = `Woche ${state.currentWeekIndex + 1} von ${totalWeeks}`;
+            } else {
+                 DOMElements.currentWeekDisplay.textContent = `Woche ${state.currentWeekIndex + 1} von ${totalWeeks} (${dateFormatter.format(monday)} - ${dateFormatter.format(sunday)})`;
+            }
+
             const schedule = state.weeklySchedules[state.currentWeekIndex].schedule;
             for (let i = 0; i < 7; i++) {
                 const day = new Date(monday);
@@ -641,7 +648,7 @@
             DOMElements.phaseGoalsEditor.classList.toggle('hidden', !state.isEditMode);
             DOMElements.prevWeekBtn.disabled = state.currentWeekIndex <= 0;
             DOMElements.nextWeekBtn.disabled = state.currentWeekIndex >= state.weeklySchedules.length - 1;
-            DOMElements.versionFooter.textContent = `Interaktiver Trainingsplan - v${HTML_VERSION} - Datenmodell v${DATA_MODEL_VERSION}`;
+            DOMElements.versionFooter.textContent = `MatchPlan Pro - v${HTML_VERSION} - Datenmodell v${DATA_MODEL_VERSION}`;
         };
 
         const renderChart = () => {
@@ -993,6 +1000,30 @@
             }
         };
 
+        const deleteOnlineData = async () => {
+            if (!state.syncId) return;
+            showConfirmModal("Möchten Sie den Online-Plan wirklich löschen? Dies kann nicht rückgängig gemacht werden. Ihre lokalen Daten bleiben erhalten.", async () => {
+                DOMElements.syncBackupBtn.classList.add('is-processing');
+                setSyncStatus('syncing', 'Lösche Online-Plan...');
+                try {
+                    const response = await fetch(`${JSONBLOB_API_URL}/${state.syncId}`, {
+                        method: 'DELETE'
+                    });
+                    if (!response.ok) throw new Error('Could not delete data');
+                    state.syncId = null;
+                    state.planId = crypto.randomUUID(); // Generate new ID for local plan
+                    saveState();
+                    updateShareLinkUI();
+                    setSyncStatus('success', 'Online-Plan gelöscht');
+                } catch(error) {
+                    console.error("Error deleting online data:", error);
+                    setSyncStatus('error', 'Löschen fehlgeschlagen');
+                } finally {
+                    DOMElements.syncBackupBtn.classList.remove('is-processing');
+                }
+            });
+        };
+
         const syncOnStartup = async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const urlSyncId = urlParams.get('syncId');
@@ -1010,8 +1041,10 @@
                 const url = `${window.location.origin}${window.location.pathname}?syncId=${state.syncId}`;
                 DOMElements.shareLinkInput.value = url;
                 DOMElements.shareLinkContainer.classList.remove('hidden');
+                DOMElements.deleteOnlineDataBtn.disabled = false;
             } else {
                 DOMElements.shareLinkContainer.classList.add('hidden');
+                DOMElements.deleteOnlineDataBtn.disabled = true;
             }
         };
 
@@ -1215,6 +1248,7 @@
             DOMElements.createShareLinkBtn.addEventListener('click', () => { if (!state.syncId) uploadData(); else updateShareLinkUI(); });
             DOMElements.copyLinkBtn.addEventListener('click', () => { DOMElements.shareLinkInput.select(); document.execCommand('copy'); });
             DOMElements.manualSyncBtn.addEventListener('click', () => { if (state.syncId) uploadData(); else alert("Bitte erstellen Sie zuerst einen Freigabe-Link."); });
+            DOMElements.deleteOnlineDataBtn.addEventListener('click', deleteOnlineData);
             DOMElements.exportDataBtn.addEventListener('click', handleExportClick);
             DOMElements.importFileInput.addEventListener('change', handleImportChange);
 
