@@ -272,7 +272,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         Chart.register(ChartDataLabels);
         
-        const HTML_VERSION = "2.3.3";
+        const HTML_VERSION = "2.3.4"; // <-- Updated version
         const DATA_MODEL_VERSION = 5;
         const JSONBLOB_API_URL = "https://jsonblob.com/api/jsonBlob";
 
@@ -926,6 +926,7 @@
             try {
                 if (!state.syncId) {
                     setSyncStatus('syncing', 'Erstelle Speicherort...');
+                    // Step 1: Create the blob. The state sent here has syncId: null
                     const response = await fetch(JSONBLOB_API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -934,9 +935,20 @@
                     if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
                     const locationHeader = response.headers.get('Location');
                     if (!locationHeader) throw new Error('Location header not found in response');
+                    
                     const newSyncId = locationHeader.split('/').pop();
-                    state.syncId = newSyncId;
-                    saveState();
+                    state.syncId = newSyncId; // Step 2: Update state in memory with the new ID
+                    
+                    // Step 3: Immediately update the blob on the server with the state that now contains the syncId.
+                    setSyncStatus('syncing', 'Speichere ID...');
+                    const updateResponse = await fetch(`${JSONBLOB_API_URL}/${state.syncId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(state)
+                    });
+                    if (!updateResponse.ok) throw new Error(`Could not update blob with syncId: ${updateResponse.statusText}`);
+
+                    saveState(); // Step 4: Save the final state to local storage
                     dataChangedSinceLastSync = false;
                     setSyncStatus('success', 'Online-Speicher erstellt!');
                     updateShareLinkUI();
@@ -965,10 +977,11 @@
             try {
                 const response = await fetch(`${JSONBLOB_API_URL}/${syncId}`);
                 if (!response.ok) throw new Error('Could not fetch data');
-                const remoteData = await response.json();
+                let remoteData = await response.json();
                 
                 if (isUrlSync) {
                     console.log("Syncing from URL, overwriting local state.");
+                    remoteData = migrateDataModel(remoteData); // Ensure data model is current
                     Object.assign(state, remoteData);
                     state.startDateOfPlan = parseDate(state.startDateOfPlan);
                     localStorage.setItem('tennisPlanState', JSON.stringify(state));
@@ -978,6 +991,7 @@
                 } else if (remoteData.planId === state.planId) {
                     if (new Date(remoteData.lastModified) > new Date(state.lastModified)) {
                         console.log("Remote data is newer. Updating local state.");
+                        remoteData = migrateDataModel(remoteData); // Ensure data model is current
                         Object.assign(state, remoteData);
                         state.startDateOfPlan = parseDate(state.startDateOfPlan);
                         localStorage.setItem('tennisPlanState', JSON.stringify(state));
