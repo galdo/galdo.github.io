@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MatchPlan Pro</title>
+    <title>SportsPlan Free</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎾</text></svg>">
     <!-- Icon für iPhone Homescreen -->
     <link rel="apple-touch-icon" href="icon.png">
@@ -20,7 +20,7 @@
 
     <!-- Mobile Header -->
     <div id="mobile-header" class="hidden">
-        <h1 class="text-xl font-bold" style="color: #45658e;">MatchPlan Pro</h1>
+        <h1 class="text-xl font-bold" style="color: #45658e;">SportsPlan Free</h1>
         <button id="burger-menu-btn" aria-label="Menü öffnen">
             <i class="fa-solid fa-bars"></i>
         </button>
@@ -42,7 +42,7 @@
             <div id="phase-selector-container" class="mb-8 box rounded-xl grid grid-cols-1 lg:grid-cols-3 lg:gap-8 items-center p-4">
                 <div class="lg:col-span-1 mb-4 lg:mb-0 flex items-center gap-3">
                      <i class="fa-solid fa-medal app-title-icon text-3xl"></i>
-                     <h2 class="app-title text-4xl" style="color: #45658e;">MatchPlan Pro</h2>
+                     <h2 class="app-title text-4xl" style="color: #45658e;">SportsPlan Free</h2>
                 </div>
                 <div class="lg:col-span-2 flex items-center gap-4">
                     <div id="phase-selector" class="flex-grow grid grid-cols-4 gap-2">
@@ -300,11 +300,32 @@
         let weeklyFocusChart;
         let weightCurveChart;
 
-        const allTips = [
-            { icon: '🧠', title: 'Mentale Stärke', text: 'Tennis ist Kopfsache. Bleib geduldig, analysiere Fehler konstruktiv und lass dich von Rückschlägen nicht entmutigen.' },
-            { icon: '🏃‍♂️', title: 'Konstanz schlägt Intensität', text: 'Regelmäßiges, geplantes Training ist effektiver als unregelmäßige, überintensive Einheiten. Höre auf deinen Körper, um Verletzungen zu vermeiden.' },
-            { icon: '🤝', title: 'Trainingspartner', text: 'Suche dir nach den ersten Monaten Spielpartner. Regelmäßige Matches sind der beste Weg, um das Gelernte anzuwenden und Matchpraxis zu sammeln.' },
-        ];
+		const allTips = [
+			{ icon: '🧠', title: 'Mentale Stärke', text: 'Tennis ist Kopfsache. Bleib geduldig, analysiere Fehler konstruktiv und lass dich von Rückschlägen nicht entmutigen.' },
+			{ icon: '🏃‍♂️', title: 'Konstanz schlägt Intensität', text: 'Regelmäßiges, geplantes Training ist effektiver als unregelmäßige, überintensive Einheiten. Höre auf deinen Körper, um Verletzungen zu vermeiden.' },
+			{ icon: '🤝', title: 'Trainingspartner', text: 'Suche dir nach den ersten Monaten Spielpartner. Regelmäßige Matches sind der beste Weg, um das Gelernte anzuwenden und Matchpraxis zu sammeln.' },
+			{ icon: '🎯', title: 'Setze klare Ziele', text: 'Definiere kurz- und langfristige Ziele. Ein klares Ziel vor Augen ist der stärkste Motivator.' },
+			{ icon: '🏆', title: 'Belohne dich', text: 'Feiere deine Erfolge, auch die kleinen. Eine Belohnung nach einer harten Trainingswoche kann Wunder wirken.' },
+			{ icon: '💡', title: 'Visualisiere Erfolg', text: 'Stell dir vor, wie du einen perfekten Schlag ausführst oder ein Match gewinnst. Mentales Training ist genauso wichtig wie körperliches.' },
+			{ icon: '🔥', title: 'Finde dein "Warum"', text: 'Erinnere dich daran, warum du mit dem Sport angefangen hast. Diese intrinsische Motivation trägt dich durch harte Phasen.' },
+			{ icon: '💧', title: 'Trinke genug', text: 'Hydration ist entscheidend für Konzentration und Leistung. Trinke regelmäßig Wasser, nicht erst, wenn du Durst hast.' },
+			{ icon: '🍎', title: 'Ernährung als Treibstoff', text: 'Dein Körper ist ein Motor. Gib ihm den richtigen Treibstoff mit einer ausgewogenen Ernährung, um auf dem Platz Leistung zu bringen.' },
+			{ icon: '😴', title: 'Schlaf ist Regeneration', text: 'Im Schlaf repariert dein Körper Muskeln und verarbeitet Gelerntes. Priorisiere 7-9 Stunden hochwertigen Schlaf.' },
+			{ icon: '🤸', title: 'Richtiges Aufwärmen', text: 'Ein gutes Warm-up bereitet deine Muskeln und Gelenke auf die Belastung vor und minimiert das Verletzungsrisiko.' },
+			{ icon: '🧘', title: 'Cool-Down nicht vergessen', text: 'Ein leichtes Auslaufen und Dehnen nach dem Training hilft deinem Körper, die Regeneration einzuleiten und Muskelkater zu reduzieren.' },
+			{ icon: '👟', title: 'Fußarbeit ist alles', text: 'Gute Beinarbeit bringt dich in die optimale Position für jeden Schlag. Übe Split-Steps und schnelle, kurze Schritte.' },
+			{ icon: '👀', title: 'Ball im Auge behalten', text: 'Verfolge den Ball mit den Augen bis zum Treffpunkt auf deinem Schläger. Das verbessert dein Timing und deine Präzision dramatisch.' },
+			{ icon: '🔄', title: 'Variiere deine Schläge', text: 'Spiele nicht immer nur mit voller Kraft. Nutze Slice, Topspin und Stoppbälle, um den Rhythmus deines Gegners zu brechen.' },
+			{ icon: '🛡️', title: 'Der zweite Aufschlag', text: 'Ein sicherer zweiter Aufschlag ist eine Waffe. Trainiere ihn mit Fokus auf Spin und Platzierung, nicht nur auf Geschwindigkeit.' },
+			{ icon: '🔍', title: 'Analysiere den Gegner', text: 'Beobachte deinen Gegner. Hat er eine schwächere Seite? Wie reagiert er unter Druck? Nutze diese Informationen strategisch.' },
+			{ icon: '🔙', title: 'Return-Training', text: 'Jeder Punkt beginnt mit Aufschlag und Return. Übe den Return genauso intensiv wie deinen Aufschlag, um sofort Druck aufzubauen.' },
+			{ icon: '📹', title: 'Videoanalyse nutzen', text: 'Nimm dich selbst beim Spielen auf. Eine Videoanalyse kann technische Fehler aufdecken, die du im Spiel nicht bemerkst.' },
+			{ icon: '🧩', title: 'Spiele mit Plan', text: 'Gehe in ein Match mit einer einfachen Taktik. Zum Beispiel: "Ich spiele dem Gegner hoch auf die Rückhand." Das gibt deinem Spiel Struktur.' },
+			{ icon: '🎶', title: 'Musik als Booster', text: 'Eine motivierende Playlist vor dem Training oder Match kann dich in die richtige Stimmung bringen und deine Energie steigern.' },
+			{ icon: '💪', title: 'Ganzkörper-Fitness', text: 'Tennis ist ein Ganzkörpersport. Ergänze dein Training auf dem Platz mit Kraft- und Stabilitätsübungen für Rumpf, Beine und Schultern.' },
+			{ icon: '🧘‍♀️', title: 'Pausen sind produktiv', text: 'Hab keine Angst vor Pausentagen. Geplante Erholung ist ein aktiver Teil des Trainingsprozesses und verhindert Burnout.' },
+			{ icon: '📈', title: 'Fortschritt tracken', text: 'Das Führen eines Trainingstagebuchs hilft dir, deine Entwicklung zu sehen und motiviert zu bleiben, wenn es mal nicht so läuft.' }
+		];
 
         // --- DOM Elements ---
         const DOMElements = {
@@ -652,7 +673,7 @@
             DOMElements.phaseGoalsEditor.classList.toggle('hidden', !state.isEditMode);
             DOMElements.prevWeekBtn.disabled = state.currentWeekIndex <= 0;
             DOMElements.nextWeekBtn.disabled = state.currentWeekIndex >= state.weeklySchedules.length - 1;
-            DOMElements.versionFooter.textContent = `MatchPlan Pro - v${HTML_VERSION} - Datenmodell v${DATA_MODEL_VERSION}`;
+            DOMElements.versionFooter.textContent = `SportsPlan Free - v${HTML_VERSION} - Datenmodell v${DATA_MODEL_VERSION}`;
         };
 
         const renderChart = () => {
